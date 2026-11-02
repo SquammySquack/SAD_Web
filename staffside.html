@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center | DCM & Co.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="staffside.css">
+<script src="Theme.js"></script>
+<script>
+  // Redirect to login if there is no staff session
+  (function () {
+    var s = null;
+    try { s = JSON.parse(sessionStorage.getItem('dcm_session')); } catch (e) {}
+    if (!s || s.role !== 'staff') window.location.replace('loginpage.html?role=staff');
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- Icon set -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-9-9v9h9z"/><path d="M15 3.5A9 9 0 0120.5 9H15V3.5z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 011-1h2M17 4h2a1 1 0 011 1v2M20 17v2a1 1 0 01-1 1h-2M7 20H5a1 1 0 01-1-1v-2"/><path d="M8 12h8"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></symbol>
+  <symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="i-flip" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+</svg>
+
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Main navigation">
+    <a href="index.html" class="brand" aria-label="DCM & Co. home">
+      <span class="brand-name"><span class="c">DCM</span> & Co.</span>
+      <span class="brand-sub">Staff Portal</span>
+    </a>
+
+    <div class="nav-label">Menu</div>
+    <ul class="nav-menu grow">
+      <li><a href="#command" data-view="command"><svg class="ico"><use href="#i-pie"/></svg>Command Center</a></li>
+      <li><a href="#clients" data-view="clients"><svg class="ico"><use href="#i-users"/></svg>Client Database</a></li>
+      <li><a href="#receipts" data-view="receipts"><svg class="ico"><use href="#i-scan"/></svg>Receipt Processing (OCR)</a></li>
+      <li><a href="#fraud" data-view="fraud"><svg class="ico"><use href="#i-alert"/></svg>Fraud Analytics<span class="nav-count" id="navAlerts" hidden>0</span></a></li>
+      <li><a href="#deadlines" data-view="deadlines"><svg class="ico"><use href="#i-clock"/></svg>Deadline Tracker</a></li>
+      <li><a href="#reports" data-view="reports"><svg class="ico"><use href="#i-file"/></svg>Reports</a></li>
+    </ul>
+
+    <ul class="nav-menu nav-bottom">
+      <li><a href="#settings" data-view="settings"><svg class="ico"><use href="#i-shield"/></svg>Admin Settings</a></li>
+      <li><a href="loginpage.html" id="logoutLink"><svg class="ico"><use href="#i-logout"/></svg>Log Out</a></li>
+    </ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <label class="search">
+        <svg class="ico"><use href="#i-search"/></svg>
+        <input type="text" id="searchInput" placeholder="Search Client, TIN, Vendor, or Invoice #..." aria-label="Search" autocomplete="off">
+      </label>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode"><svg class="ico moon"><use href="#i-moon"/></svg><svg class="ico sun"><use href="#i-sun"/></svg></button>
+      <div class="user">
+        <div class="user-text">
+          <strong id="userName">Welcome, Staff</strong>
+          <span>CPA Partner Portal</span>
+        </div>
+        <div class="avatar" id="userAvatar" aria-hidden="true">S</div>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+
+      <!-- ===================== COMMAND CENTER ===================== -->
+      <div class="view" id="view-command">
+        <div class="page-head">
+          <div>
+            <h1>Fraud & Anomaly Command Center</h1>
+            <p>System-wide analytics across all client engagements.</p>
+          </div>
+          <div class="head-actions">
+            <span class="scan-info" id="scanInfo">Last scan: never</span>
+            <span class="chip"><i></i> Sample data</span>
+            <button type="button" class="btn ghost" data-scan-open><svg class="ico"><use href="#i-camera"/></svg>Scan receipt</button>
+            <button type="button" class="btn dark" id="runScan"><svg class="ico"><use href="#i-sync"/></svg><span>Run Global Audit Scan</span></button>
+          </div>
+        </div>
+
+        <div class="grid-top">
+          <section class="card" aria-labelledby="fraud-title">
+            <div class="card-head">
+              <h3 id="fraud-title"><svg class="ico"><use href="#i-eye"/></svg>Cross-Client Fraud Alerts</h3>
+              <span class="count" id="openCount">0 open</span>
+            </div>
+            <div class="alert-list" id="dashAlerts"></div>
+            <div class="btn-row"><a href="#fraud" class="btn sm ghost">View all alerts</a></div>
+          </section>
+
+          <section class="card" aria-labelledby="doc-title">
+            <div class="card-head">
+              <h3 id="doc-title"><svg class="ico"><use href="#i-folder"/></svg>Document Collection Status</h3>
+            </div>
+            <ul class="doc-list" id="dashDocs"></ul>
+            <button type="button" class="btn outline block" id="bulkRemind"><svg class="ico"><use href="#i-mail"/></svg>Send Bulk Reminders</button>
+          </section>
+        </div>
+
+        <section class="card" aria-labelledby="risk-title">
+          <div class="card-head">
+            <h3 id="risk-title"><svg class="ico"><use href="#i-cpu"/></svg>Client Risk Scoring Dashboard (ML Analysis)</h3>
+            <a href="#clients" class="link">All clients</a>
+          </div>
+          <div class="table-wrap scope">
+            <table>
+              <thead><tr><th>Client Name</th><th>Engagement Status</th><th>Anomalies Detected</th><th>Risk Score</th><th>Action</th></tr></thead>
+              <tbody id="dashRisk"></tbody>
+            </table>
+          </div>
+          <div class="empty" hidden>No clients match your search.</div>
+        </section>
+      </div>
+
+      <!-- ===================== CLIENT DATABASE ===================== -->
+      <div class="view" id="view-clients" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Client Database</h1>
+            <p>Every client engagement, with risk score and status in one place.</p>
+          </div>
+          <div class="head-actions">
+            <span class="chip"><i></i> Sample data</span>
+            <button type="button" class="btn primary" id="addClientBtn"><svg class="ico"><use href="#i-plus"/></svg>Add client</button>
+          </div>
+        </div>
+        <section class="card">
+          <div class="toolbar">
+            <h3>All clients</h3>
+            <div class="filters">
+              <select class="select" id="riskFilter" aria-label="Filter by risk">
+                <option value="all">All risk levels</option>
+                <option value="high">High risk</option>
+                <option value="medium">Medium risk</option>
+                <option value="low">Low risk</option>
+              </select>
+              <select class="select" id="statusFilter" aria-label="Filter by status">
+                <option value="all">All statuses</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap scope">
+            <table>
+              <thead><tr><th>Client Name</th><th>Engagement Status</th><th>Anomalies Detected</th><th>Risk Score</th><th>Action</th></tr></thead>
+              <tbody id="clientRows"></tbody>
+            </table>
+          </div>
+          <div class="empty" hidden>No clients match your filters.</div>
+        </section>
+      </div>
+
+      <!-- ===================== RECEIPTS ===================== -->
+      <div class="view" id="view-receipts" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Receipt Processing</h1>
+            <p>Record receipts and invoices. Each one is checked for duplicates and ghost vendors automatically.</p>
+          </div>
+          <div class="head-actions">
+            <button type="button" class="btn primary" data-scan-open><svg class="ico"><use href="#i-camera"/></svg>Scan receipt</button>
+          </div>
+        </div>
+
+        <div class="stack">
+          <section class="card">
+            <div class="card-head"><h3><svg class="ico"><use href="#i-scan"/></svg>New receipt</h3></div>
+            <form id="receiptForm" autocomplete="off">
+              <div class="form-grid">
+                <div class="field"><label for="rClient">Client</label><select class="select" id="rClient"></select></div>
+                <div class="field"><label for="rVendor">Vendor name</label><input class="input" id="rVendor" type="text" placeholder="e.g. XYZ Trading" maxlength="80"></div>
+                <div class="field"><label for="rTin">Vendor TIN</label><input class="input" id="rTin" type="text" placeholder="123-456-789" maxlength="20"></div>
+                <div class="field"><label for="rInvoice">Invoice #</label><input class="input" id="rInvoice" type="text" placeholder="INV-2026-001" maxlength="40"></div>
+                <div class="field"><label for="rDate">Invoice date</label><input class="input" id="rDate" type="date"></div>
+                <div class="field"><label for="rAmount">Amount (₱)</label><input class="input" id="rAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                <div class="field span2"><label for="rFile">Scan or photo (optional)</label><input class="input" id="rFile" type="file" accept=".pdf,.jpg,.jpeg,.png">
+                  <div class="scan-chip" id="scanChip" hidden><span class="chip-thumb" id="scanChipThumb"></span><span class="chip-name" id="scanChipName"></span><button type="button" id="scanChipX" aria-label="Remove attached scan"><svg class="ico"><use href="#i-x"/></svg></button></div>
+                </div>
+              </div>
+              <div class="btn-row" style="margin-top:0"><button type="submit" class="btn primary">Record and check receipt</button></div>
+              <p class="muted small" style="margin-top:14px">Automatic text extraction (OCR) needs a server, so details are typed in for now. The duplicate and ghost vendor checks run on what you enter.</p>
+            </form>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h3>Receipt register</h3></div>
+            <div class="table-wrap scope">
+              <table>
+                <thead><tr><th>Date</th><th>Client</th><th>Vendor</th><th>Invoice #</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+                <tbody id="receiptRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>No receipts match your search.</div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ===================== FRAUD ANALYTICS ===================== -->
+      <div class="view" id="view-fraud" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Fraud Analytics</h1>
+            <p>Cross-client alerts found in your receipt records.</p>
+          </div>
+          <span class="chip"><i></i> Sample data</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat red"><small>Open alerts</small><strong id="stOpen">0</strong><span>Need review</span></div>
+          <div class="stat"><small>Ghost vendors</small><strong id="stGhost">0</strong><span>TIN shared by 3+ clients</span></div>
+          <div class="stat amber"><small>Duplicate invoices</small><strong id="stDup">0</strong><span>Same client, same invoice</span></div>
+          <div class="stat red"><small>High-risk clients</small><strong id="stHigh">0</strong><span id="stHighNote"></span></div>
+        </div>
+
+        <section class="card" style="margin-bottom:22px">
+          <div class="toolbar">
+            <h3>Alerts</h3>
+            <select class="select" id="alertFilter" aria-label="Filter alerts">
+              <option value="all">All alerts</option>
+              <option value="open">Open</option>
+              <option value="review">In review</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+          <div class="alert-list scope" id="fraudList"></div>
+          <div class="empty" hidden>No alerts match your filters.</div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h3><svg class="ico"><use href="#i-cpu"/></svg>Risk by client</h3></div>
+          <div id="riskBars"></div>
+        </section>
+      </div>
+
+      <!-- ===================== DEADLINES ===================== -->
+      <div class="view" id="view-deadlines" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Deadline Tracker</h1>
+            <p>Keep every client task and filing date on schedule.</p>
+          </div>
+        </div>
+
+        <div class="stats three">
+          <div class="stat"><small>Open tasks</small><strong id="dlOpen">0</strong><span>Not yet done</span></div>
+          <div class="stat amber"><small>Due in 7 days</small><strong id="dlSoon">0</strong><span>Coming up</span></div>
+          <div class="stat red"><small>Overdue</small><strong id="dlOver">0</strong><span>Past due date</span></div>
+        </div>
+
+        <div class="stack">
+          <section class="card">
+            <div class="card-head"><h3><svg class="ico"><use href="#i-clock"/></svg>Add a deadline</h3></div>
+            <form id="deadlineForm" autocomplete="off">
+              <div class="form-grid">
+                <div class="field"><label for="dClient">Client</label><select class="select" id="dClient"></select></div>
+                <div class="field"><label for="dTask">Task</label><input class="input" id="dTask" type="text" placeholder="e.g. Submit quarterly filing" maxlength="80"></div>
+                <div class="field"><label for="dDue">Due date</label><input class="input" id="dDue" type="date"></div>
+              </div>
+              <div class="btn-row" style="margin-top:0"><button type="submit" class="btn primary"><svg class="ico"><use href="#i-plus"/></svg>Add deadline</button></div>
+            </form>
+          </section>
+
+          <section class="card">
+            <div class="toolbar">
+              <h3>All deadlines</h3>
+              <select class="select" id="deadlineFilter" aria-label="Filter deadlines">
+                <option value="all">All</option>
+                <option value="open">Open</option>
+                <option value="overdue">Overdue</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div class="table-wrap scope">
+              <table>
+                <thead><tr><th>Task</th><th>Client</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+                <tbody id="deadlineRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>No deadlines match your filters.</div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ===================== REPORTS ===================== -->
+      <div class="view" id="view-reports" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Reports</h1>
+            <p>Download firm-wide reports as CSV files that open in Excel or Google Sheets.</p>
+          </div>
+        </div>
+        <section class="card">
+          <div class="table-wrap scope">
+            <table>
+              <thead><tr><th>Report</th><th>Format</th><th></th></tr></thead>
+              <tbody>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-cpu"/></svg></div><div><strong>Client Risk Report</strong><span>Risk score, level and anomalies for every client</span></div></div></td>
+                  <td>CSV</td>
+                  <td class="right"><button type="button" class="btn sm ghost" data-report="risk"><svg class="ico"><use href="#i-download"/></svg>Download</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-alert"/></svg></div><div><strong>Fraud and Anomaly Report</strong><span>All alerts with their review status</span></div></div></td>
+                  <td>CSV</td>
+                  <td class="right"><button type="button" class="btn sm ghost" data-report="fraud"><svg class="ico"><use href="#i-download"/></svg>Download</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-scan"/></svg></div><div><strong>Receipt Register</strong><span>Every recorded receipt with its flags</span></div></div></td>
+                  <td>CSV</td>
+                  <td class="right"><button type="button" class="btn sm ghost" data-report="receipts"><svg class="ico"><use href="#i-download"/></svg>Download</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-clock"/></svg></div><div><strong>Deadline Schedule</strong><span>Tasks, due dates and status</span></div></div></td>
+                  <td>CSV</td>
+                  <td class="right"><button type="button" class="btn sm ghost" data-report="deadlines"><svg class="ico"><use href="#i-download"/></svg>Download</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-folder"/></svg></div><div><strong>Document Collection Report</strong><span>Requested documents and their status</span></div></div></td>
+                  <td>CSV</td>
+                  <td class="right"><button type="button" class="btn sm ghost" data-report="docs"><svg class="ico"><use href="#i-download"/></svg>Download</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="empty" hidden>No reports match your search.</div>
+        </section>
+      </div>
+
+      <!-- ===================== ADMIN SETTINGS ===================== -->
+      <div class="view" id="view-settings" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Admin Settings</h1>
+            <p>Profile, risk thresholds and notification preferences.</p>
+          </div>
+        </div>
+
+        <form id="settingsForm">
+          <section class="card settings-card">
+            <div class="card-head"><h3>Profile</h3></div>
+            <div class="two-col">
+              <div class="field"><label for="setName">Display name</label><input class="input" id="setName" type="text" maxlength="40" required></div>
+              <div class="field"><label for="setEmail">Email</label><input class="input" id="setEmail" type="email" readonly></div>
+            </div>
+          </section>
+
+          <section class="card settings-card">
+            <div class="card-head"><h3>Risk thresholds</h3></div>
+            <p class="muted small" style="margin-bottom:16px">A client's risk score at or above these values is shown as High or Medium. Anything lower is Low.</p>
+            <div class="two-col">
+              <div class="field"><label for="setHigh">High risk from (%)</label><input class="input" id="setHigh" type="number" min="2" max="100"></div>
+              <div class="field" style="margin-bottom:0"><label for="setMed">Medium risk from (%)</label><input class="input" id="setMed" type="number" min="1" max="99"></div>
+            </div>
+          </section>
+
+          <section class="card settings-card">
+            <div class="card-head"><h3>Notifications</h3></div>
+            <div class="pref">
+              <div><strong>Fraud alerts</strong><span>Tell me when a new alert is found</span></div>
+              <label class="switch"><input type="checkbox" id="prefFraud" aria-label="Fraud alerts"><span class="slider"></span></label>
+            </div>
+            <div class="pref">
+              <div><strong>Document reminders</strong><span>Show a reminder for overdue document requests</span></div>
+              <label class="switch"><input type="checkbox" id="prefDocs" aria-label="Document reminders"><span class="slider"></span></label>
+            </div>
+          </section>
+
+          <div class="btn-row" style="margin-top:0">
+            <button type="submit" class="btn primary">Save changes</button>
+          </div>
+        </form>
+
+        <section class="card settings-card" style="margin-top:22px">
+          <div class="card-head"><h3>Demo data</h3></div>
+          <p class="muted small" style="margin-bottom:16px">Everything you add here is saved in this browser only. Reset to go back to the original sample data.</p>
+          <button type="button" class="btn danger sm" id="resetDemo">Reset demo data</button>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="dialog-head">
+      <h3 id="modalTitle"></h3>
+      <button type="button" class="icon-btn" data-close aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Receipt scanner -->
+<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a receipt" hidden>
+  <video class="scan-video" id="scanVideo" playsinline muted autoplay hidden></video>
+  <div class="scan-bg" aria-hidden="true"></div>
+
+  <div class="scan-top">
+    <button type="button" class="scan-circle" id="scanClose" aria-label="Close scanner"><svg class="ico"><use href="#i-x"/></svg></button>
+    <div class="scan-hint">Snap a receipt or invoice</div>
+    <button type="button" class="scan-circle" id="scanFlash" aria-label="Toggle flash" aria-pressed="false"><svg class="ico"><use href="#i-bolt"/></svg></button>
+  </div>
+
+  <div class="vf-wrap">
+    <div class="vf" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><span class="scan-line"></span></div>
+    <p class="scan-msg" id="scanMsg" hidden></p>
+  </div>
+
+  <div class="scan-bottom">
+    <button type="button" class="scan-circle lg" id="scanGallery" aria-label="Choose a photo from your device"><svg class="ico"><use href="#i-image"/></svg></button>
+    <button type="button" class="shutter" id="scanShutter" aria-label="Take photo"><span></span></button>
+    <button type="button" class="scan-circle lg" id="scanFlip" aria-label="Switch camera"><svg class="ico"><use href="#i-flip"/></svg></button>
+  </div>
+
+  <input type="file" id="scanFile" accept="image/*" hidden>
+  <div class="scan-flash-fx" id="scanFx" aria-hidden="true"></div>
+
+  <div class="scan-sheet" id="scanSheet" hidden>
+    <div class="sheet-row">
+      <div class="thumb" id="scanThumb"><svg class="ico"><use href="#i-scan"/></svg></div>
+      <div>
+        <h3>Receipt captured</h3>
+        <p>Automatic text reading (OCR) needs a server, so type the details on the next screen. The scan stays attached to the receipt.</p>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn primary" id="scanUse">Use scan</button>
+      <button type="button" class="btn ghost" id="scanRetake">Retake</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------- Storage ---------- */
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  var session = null;
+  try { session = JSON.parse(sessionStorage.getItem('dcm_session')); } catch (e) {}
+
+  var KEYS = {
+    clients: 'dcm_staff_clients', receipts: 'dcm_staff_receipts', docs: 'dcm_staff_docs',
+    deadlines: 'dcm_staff_deadlines', alerts: 'dcm_staff_alerts', prefs: 'dcm_staff_prefs', scan: 'dcm_staff_scan'
+  };
+
+  /* ---------- Sample data ---------- */
+  var STATUSES = ['Awaiting Docs', 'Data Processing', 'Under Review', 'Completed'];
+  var TYPES = ['Audit Engagement', 'Tax Preparation', 'Bookkeeping', 'Business Consultancy'];
+  var DEF = {
+    clients: [
+      { id: 'c1', name: 'Diligence Corp.',  type: 'Audit Engagement',     status: 'Data Processing', score: 92, anomalies: '3 Suspicious Vendors',  priority: true },
+      { id: 'c2', name: 'Commitment Inc.',  type: 'Tax Preparation',      status: 'Awaiting Docs',   score: 65, anomalies: 'Unusual Expense Spike', priority: true },
+      { id: 'c3', name: 'Matter & Co.',     type: 'Business Consultancy', status: 'Completed',       score: 12, anomalies: 'None Detected',         priority: true },
+      { id: 'c4', name: 'Client A',         type: 'Bookkeeping',          status: 'Awaiting Docs',   score: 78, anomalies: 'Ghost vendor, duplicate invoice' },
+      { id: 'c5', name: 'Client B',         type: 'Bookkeeping',          status: 'Awaiting Docs',   score: 58, anomalies: 'Ghost vendor' },
+      { id: 'c6', name: 'Client C',         type: 'Tax Preparation',      status: 'Data Processing', score: 49, anomalies: 'Ghost vendor' },
+      { id: 'c7', name: 'Client D',         type: 'Bookkeeping',          status: 'Completed',       score: 41, anomalies: 'Ghost vendor' }
+    ],
+    receipts: [
+      { id: 'r1', client: 'c4', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XYZ-0101', date: '2026-10-10', amt: 50000, file: '' },
+      { id: 'r2', client: 'c5', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-5521',  date: '2026-10-11', amt: 48500, file: '' },
+      { id: 'r3', client: 'c6', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0090',  date: '2026-10-12', amt: 51200, file: '' },
+      { id: 'r4', client: 'c7', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0077',  date: '2026-10-13', amt: 49900, file: '' },
+      { id: 'r5', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-09-20', amt: 12500, file: '' },
+      { id: 'r6', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-10-15', amt: 12500, file: '' },
+      { id: 'r7', client: 'c2', vendor: 'Meralco',        tin: '000-111-222', invoice: 'ML-8841', date: '2026-10-12', amt: 8200, file: '' },
+      { id: 'r8', client: 'c1', vendor: 'Globe Business', tin: '333-444-555', invoice: 'GB-2210', date: '2026-10-08', amt: 3450, file: '' }
+    ],
+    docs: [
+      { id: 'q1', client: 'c4', what: 'Q3 Receipts',      status: 'overdue',  note: 'Overdue 3 days', reminded: false },
+      { id: 'q2', client: 'c5', what: 'Bank Statement',   status: 'pending',  note: 'Pending',        reminded: false },
+      { id: 'q3', client: 'c6', what: 'BIR 2307',         status: 'received', note: 'Received',       reminded: false },
+      { id: 'q4', client: 'c7', what: 'January Invoices', status: 'received', note: 'Received',       reminded: false }
+    ],
+    deadlines: [
+      { id: 'd1', client: 'c4', task: 'Collect Q3 receipts',              due: '2026-10-28', done: false },
+      { id: 'd2', client: 'c5', task: 'Collect bank statement',           due: '2026-11-05', done: false },
+      { id: 'd3', client: 'c2', task: 'Review quarterly tax filing',      due: '2026-11-15', done: false },
+      { id: 'd4', client: 'c1', task: 'Plan year-end audit fieldwork',    due: '2026-11-30', done: false },
+      { id: 'd5', client: 'c3', task: 'Deliver final consultancy report', due: '2026-10-20', done: true }
+    ],
+    alerts: {},
+    prefs: { name: '', high: 75, med: 50, nFraud: true, nDocs: true },
+    scan: ''
+  };
+  var S = {};
+  function loadAll() { Object.keys(DEF).forEach(function (k) { S[k] = store.get(KEYS[k], JSON.parse(JSON.stringify(DEF[k]))); }); }
+  function save(k) { store.set(KEYS[k], S[k]); }
+
+  /* ---------- Helpers ---------- */
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function peso(n) { return '₱' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function uid() { return 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function norm(s) { return String(s).trim().toLowerCase().replace(/\s+/g, ''); }
+  function pd(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function fmtDate(s) { return pd(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  function isoToday() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function nowStamp() { return new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+  function cname(id) { var c = S.clients.filter(function (x) { return x.id === id; })[0]; return c ? c.name : 'Unknown client'; }
+  function level(score) { return score >= S.prefs.high ? 'high' : score >= S.prefs.med ? 'medium' : 'low'; }
+  var LV = { high: 'High Risk', medium: 'Med Risk', low: 'Low Risk' };
+  function riskHTML(score) {
+    var l = level(score);
+    return '<div class="risk ' + l + '"><div class="risk-label"><span class="risk-dot"></span>' + LV[l] + ' (' + score + '%)</div><div class="meter"><i style="width:' + score + '%"></i></div></div>';
+  }
+  function ico(id) { return '<svg class="ico"><use href="#i-' + id + '"/></svg>'; }
+
+  /* ---------- Toast ---------- */
+  var toastEl = $('#toast'), toastTimer;
+  function toast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (type === 'error' ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.className = 'toast'; }, 3400);
+  }
+
+  /* ---------- Fraud analysis (runs on the receipt register) ---------- */
+  function analyze() {
+    var flags = {}, alerts = [];
+    function add(id, r) { flags[id] = flags[id] || []; if (flags[id].indexOf(r) < 0) flags[id].push(r); }
+
+    var tins = {};
+    S.receipts.forEach(function (r) {
+      var k = norm(r.tin);
+      var g = tins[k] || (tins[k] = { vendor: r.vendor, tin: r.tin, clients: [], ids: [] });
+      if (g.clients.indexOf(r.client) < 0) g.clients.push(r.client);
+      g.ids.push(r.id);
+    });
+    Object.keys(tins).forEach(function (k) {
+      var g = tins[k];
+      if (g.clients.length >= 3) {
+        g.ids.forEach(function (id) { add(id, 'Ghost vendor'); });
+        alerts.push({ id: 'ghost:' + k, type: 'ghost', g: g });
+      }
+    });
+
+    var seen = [];
+    S.receipts.map(function (r, i) { return { r: r, i: i }; })
+      .sort(function (a, b) { return a.r.date < b.r.date ? -1 : a.r.date > b.r.date ? 1 : a.i - b.i; })
+      .forEach(function (o) {
+        var r = o.r;
+        var orig = seen.filter(function (s) {
+          return s.client === r.client && (norm(s.invoice) === norm(r.invoice) ||
+            (norm(s.vendor) === norm(r.vendor) && s.amt === r.amt && s.date === r.date));
+        })[0];
+        if (orig) { add(r.id, 'Duplicate invoice'); alerts.push({ id: 'dup:' + r.id, type: 'dup', r: r, orig: orig }); }
+        seen.push(r);
+      });
+    return { flags: flags, alerts: alerts };
+  }
+  function astatus(a) { return S.alerts[a.id] || 'open'; }
+
+  function alertHTML(a, actions) {
+    var st = astatus(a), body, cls = 'alert';
+    if (a.type === 'ghost') {
+      var names = a.g.clients.map(cname).join(', ');
+      body = '<h4>' + ico('circle-alert') + '"Ghost Vendor" Detected</h4>' +
+        '<p>The vendor <strong>' + esc(a.g.vendor) + '</strong> (TIN: ' + esc(a.g.tin) + ') is appearing across <strong>' + a.g.clients.length + ' different clients</strong>.</p>' +
+        '<span class="tagline">Flagged in: ' + esc(names) + '</span>';
+    } else {
+      cls += ' warn';
+      body = '<h4>' + ico('copy') + 'Duplicate Invoice Detected</h4>' +
+        '<p>Invoice <strong>#' + esc(a.r.invoice) + '</strong> recorded for ' + esc(cname(a.r.client)) + ' matches an earlier invoice from the same client.</p>' +
+        '<span class="tagline">Vendor: ' + esc(a.r.vendor) + ' | Amount: ' + peso(a.r.amt) + '</span>';
+    }
+    if (st === 'resolved') cls += ' resolved';
+    var foot = '';
+    if (actions) {
+      var badge = st === 'resolved' ? '<span class="badge received">Resolved</span>' : st === 'review' ? '<span class="badge pending">In review</span>' : '<span class="badge overdue">Open</span>';
+      var id = esc(a.id), btns = '';
+      if (st === 'open') btns = '<button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="review">Start review</button><button type="button" class="btn sm dark" data-alert="' + id + '" data-act="resolve">Resolve</button>';
+      if (st === 'review') btns = '<button type="button" class="btn sm dark" data-alert="' + id + '" data-act="resolve">Resolve</button><button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="reopen">Reopen</button>';
+      if (st === 'resolved') btns = '<button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="reopen">Reopen</button>';
+      foot = '<div class="alert-actions">' + badge + btns + '</div>';
+    }
+    return '<div class="' + cls + (actions ? ' filterable' : '') + '" data-status="' + st + '">' + body + foot + '</div>';
+  }
+
+  /* ---------- Render: dashboard ---------- */
+  function renderDashboard() {
+    var an = analyze();
+    var active = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; });
+    $('#openCount').textContent = active.length + ' open';
+    $('#dashAlerts').innerHTML = active.length
+      ? active.slice(0, 3).map(function (a) { return alertHTML(a, false); }).join('')
+      : '<div class="empty">No open alerts. Run a scan to check again.</div>';
+
+    $('#dashDocs').innerHTML = S.docs.map(function (d) {
+      var cls = d.status === 'overdue' ? 'overdue' : d.status === 'pending' ? 'pending' : 'received';
+      var extra = d.status !== 'received'
+        ? (d.reminded ? '<span class="sent">Reminder sent</span>' : '') +
+          '<button type="button" class="btn sm ghost" data-recv="' + esc(d.id) + '">Mark received</button>'
+        : '';
+      return '<li><span><b>' + esc(cname(d.client)) + '</b> <span class="what">- ' + esc(d.what) + '</span></span>' +
+        '<span class="doc-right">' + extra + '<span class="badge ' + cls + '">' + esc(d.note) + '</span></span></li>';
+    }).join('');
+
+    var pri = S.clients.filter(function (c) { return c.priority; });
+    $('#dashRisk').innerHTML = pri.map(function (c) {
+      var btn = level(c.score) === 'high'
+        ? '<button type="button" class="btn sm danger" data-client="' + esc(c.id) + '">Review Now</button>'
+        : '<button type="button" class="btn sm ghost" data-client="' + esc(c.id) + '">View File</button>';
+      return '<tr class="filterable"><td><div class="client-name">' + esc(c.name) + '</div><div class="client-type">' + esc(c.type) + '</div></td>' +
+        '<td>' + esc(c.status) + '</td><td>' + esc(c.anomalies) + '</td><td>' + riskHTML(c.score) + '</td><td>' + btn + '</td></tr>';
+    }).join('');
+
+    $('#scanInfo').textContent = 'Last scan: ' + (S.scan || 'never');
+  }
+
+  /* ---------- Render: clients ---------- */
+  function renderClients() {
+    var rf = $('#riskFilter').value, sf = $('#statusFilter').value;
+    var list = S.clients.slice().sort(function (a, b) { return b.score - a.score; })
+      .filter(function (c) { return (rf === 'all' || level(c.score) === rf) && (sf === 'all' || c.status === sf); });
+    $('#clientRows').innerHTML = list.map(function (c) {
+      return '<tr class="filterable"><td><div class="client-name">' + esc(c.name) + '</div><div class="client-type">' + esc(c.type) + '</div></td>' +
+        '<td>' + esc(c.status) + '</td><td>' + esc(c.anomalies) + '</td><td>' + riskHTML(c.score) + '</td>' +
+        '<td><button type="button" class="btn sm ghost" data-client="' + esc(c.id) + '">View File</button></td></tr>';
+    }).join('');
+  }
+  function fillSelects() {
+    var opts = S.clients.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
+    ['#rClient', '#dClient'].forEach(function (id) { var el = $(id), v = el.value; el.innerHTML = opts; if (v) el.value = v; });
+    var sf = $('#statusFilter'), cur = sf.value;
+    sf.innerHTML = '<option value="all">All statuses</option>' + STATUSES.map(function (s) { return '<option>' + s + '</option>'; }).join('');
+    sf.value = cur || 'all';
+  }
+
+  /* ---------- Render: receipts ---------- */
+  function renderReceipts() {
+    var an = analyze();
+    var list = S.receipts.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    $('#receiptRows').innerHTML = list.map(function (r) {
+      var f = an.flags[r.id];
+      var status = f
+        ? '<span class="badge overdue">Flagged</span><div class="reasons">' + esc(f.join(' · ')) + '</div>'
+        : '<span class="badge received">Clear</span>';
+      return '<tr class="filterable' + (f ? ' flag-row' : '') + '"><td>' + esc(fmtDate(r.date)) + '</td>' +
+        '<td>' + esc(cname(r.client)) + '</td>' +
+        '<td><div class="client-name">' + esc(r.vendor) + '</div><div class="cell-sub">TIN ' + esc(r.tin) + '</div></td>' +
+        '<td>' + esc(r.invoice) + (r.file ? '<div class="cell-sub">' + esc(r.file) + '</div>' : '') + '</td>' +
+        '<td class="amount">' + peso(r.amt) + '</td><td>' + status + '</td>' +
+        '<td class="right"><button type="button" class="icon-btn" data-del-receipt="' + esc(r.id) + '" aria-label="Delete receipt">' + ico('trash') + '</button></td></tr>';
+    }).join('');
+  }
+
+  /* ---------- Render: fraud ---------- */
+  function renderFraud() {
+    var an = analyze();
+    var ghost = an.alerts.filter(function (a) { return a.type === 'ghost'; }).length;
+    var dup = an.alerts.filter(function (a) { return a.type === 'dup'; }).length;
+    var open = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; }).length;
+    var high = S.clients.filter(function (c) { return level(c.score) === 'high'; }).length;
+    $('#stOpen').textContent = open; $('#stGhost').textContent = ghost; $('#stDup').textContent = dup; $('#stHigh').textContent = high;
+    $('#stHighNote').textContent = 'Score ' + S.prefs.high + '% or more';
+
+    var f = $('#alertFilter').value;
+    var list = an.alerts.filter(function (a) { return f === 'all' || astatus(a) === f; });
+    $('#fraudList').innerHTML = list.map(function (a) { return alertHTML(a, true); }).join('');
+
+    $('#riskBars').innerHTML = S.clients.slice().sort(function (a, b) { return b.score - a.score; }).map(function (c) {
+      return '<div class="rbar"><div class="rbar-top"><span>' + esc(c.name) + '</span><span><b>' + c.score + '%</b> · ' + LV[level(c.score)] + '</span></div>' +
+        '<div class="bar"><i class="' + level(c.score) + '" style="width:' + c.score + '%"></i></div></div>';
+    }).join('');
+
+    var badge = $('#navAlerts');
+    badge.textContent = open; badge.hidden = open === 0;
+  }
+
+  /* ---------- Render: deadlines ---------- */
+  function dlInfo(d) {
+    if (d.done) return { key: 'done', label: 'Done', cls: 'received', days: 0 };
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    var days = Math.round((pd(d.due) - t) / 86400000);
+    if (days < 0) return { key: 'overdue', label: 'Overdue ' + (-days) + ' day' + (days === -1 ? '' : 's'), cls: 'overdue', days: days };
+    if (days <= 7) return { key: 'soon', label: days === 0 ? 'Due today' : 'Due in ' + days + ' day' + (days === 1 ? '' : 's'), cls: 'pending', days: days };
+    return { key: 'upcoming', label: 'Upcoming', cls: 'info', days: days };
+  }
+  function renderDeadlines() {
+    var infos = S.deadlines.map(function (d) { return { d: d, i: dlInfo(d) }; });
+    $('#dlOpen').textContent = infos.filter(function (x) { return x.i.key !== 'done'; }).length;
+    $('#dlSoon').textContent = infos.filter(function (x) { return x.i.key === 'soon'; }).length;
+    $('#dlOver').textContent = infos.filter(function (x) { return x.i.key === 'overdue'; }).length;
+
+    var f = $('#deadlineFilter').value;
+    var list = infos.filter(function (x) {
+      return f === 'all' || (f === 'open' && x.i.key !== 'done') || (f === 'overdue' && x.i.key === 'overdue') || (f === 'done' && x.i.key === 'done');
+    }).sort(function (a, b) {
+      if ((a.i.key === 'done') !== (b.i.key === 'done')) return a.i.key === 'done' ? 1 : -1;
+      return a.d.due < b.d.due ? -1 : a.d.due > b.d.due ? 1 : 0;
+    });
+    $('#deadlineRows').innerHTML = list.map(function (x) {
+      var d = x.d, id = esc(d.id);
+      return '<tr class="filterable"><td><div class="client-name"' + (x.i.key === 'done' ? ' style="text-decoration:line-through;color:var(--muted)"' : '') + '>' + esc(d.task) + '</div></td>' +
+        '<td>' + esc(cname(d.client)) + '</td><td>' + esc(fmtDate(d.due)) + '</td>' +
+        '<td><span class="badge ' + x.i.cls + '">' + esc(x.i.label) + '</span></td>' +
+        '<td class="right"><button type="button" class="btn sm ghost" data-toggle-dl="' + id + '">' + (d.done ? 'Reopen' : 'Mark done') + '</button> ' +
+        '<button type="button" class="icon-btn" data-del-dl="' + id + '" aria-label="Delete deadline">' + ico('trash') + '</button></td></tr>';
+    }).join('');
+  }
+
+  /* ---------- Render: settings + user ---------- */
+  function defaultName() {
+    var base = session && session.email ? session.email.split('@')[0] : 'Staff';
+    var w = base.split(/[._\-+]+/).filter(Boolean).map(function (x) { return x.charAt(0).toUpperCase() + x.slice(1); });
+    return w.length ? w.join(' ') : 'Staff';
+  }
+  function displayName() { return S.prefs.name || defaultName(); }
+  function updateUser() {
+    var n = displayName();
+    $('#userName').textContent = 'Welcome, ' + n;
+    $('#userAvatar').textContent = n.split(' ').slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || 'S';
+  }
+  function renderSettings() {
+    $('#setName').value = displayName();
+    $('#setEmail').value = (session && session.email) || '';
+    $('#setHigh').value = S.prefs.high; $('#setMed').value = S.prefs.med;
+    $('#prefFraud').checked = !!S.prefs.nFraud; $('#prefDocs').checked = !!S.prefs.nDocs;
+  }
+
+  /* ---------- Search filter ---------- */
+  var searchInput = $('#searchInput');
+  function applyFilter() {
+    var q = searchInput.value.trim().toLowerCase();
+    $$('.filterable').forEach(function (el) {
+      el.hidden = !!q && el.textContent.toLowerCase().indexOf(q) === -1;
+    });
+    $$('.scope').forEach(function (sc) {
+      var empty = sc.nextElementSibling;
+      if (empty && empty.classList.contains('empty')) {
+        empty.hidden = $$('.filterable:not([hidden])', sc).length > 0;
+      }
+    });
+  }
+  function refresh() {
+    fillSelects();
+    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines();
+    updateUser(); applyFilter();
+  }
+
+  /* ---------- Modal ---------- */
+  var modal = $('#modal'), lastFocus = null;
+  function openModal(title, html) {
+    lastFocus = document.activeElement;
+    $('#modalTitle').textContent = title;
+    $('#modalBody').innerHTML = html;
+    modal.hidden = false;
+    $('.dialog', modal).focus();
+  }
+  function closeModal() { modal.hidden = true; $('#modalBody').innerHTML = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+
+  function clientModal(id) {
+    var c = S.clients.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var an = analyze();
+    var recs = S.receipts.filter(function (r) { return r.client === id; });
+    var flagged = recs.filter(function (r) { return an.flags[r.id]; }).length;
+    var docs = S.docs.filter(function (d) { return d.client === id && d.status !== 'received'; }).length;
+    var dls = S.deadlines.filter(function (d) { return d.client === id && !d.done; }).length;
+    var opts = STATUSES.map(function (s) { return '<option' + (s === c.status ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    openModal(c.name,
+      '<div class="detail-top"><div><div class="client-type">' + esc(c.type) + '</div><div class="client-type">Anomalies: ' + esc(c.anomalies) + '</div></div>' + riskHTML(c.score) + '</div>' +
+      '<div class="detail-grid">' +
+        '<div class="box"><small>Receipts</small><b>' + recs.length + '</b></div>' +
+        '<div class="box"><small>Flagged receipts</small><b>' + flagged + '</b></div>' +
+        '<div class="box"><small>Documents outstanding</small><b>' + docs + '</b></div>' +
+        '<div class="box"><small>Open deadlines</small><b>' + dls + '</b></div>' +
+      '</div>' +
+      '<div class="field"><label for="clientStatus">Engagement status</label><select class="select" id="clientStatus" data-set-status="' + esc(c.id) + '">' + opts + '</select></div>' +
+      '<div class="btn-row"><button type="button" class="btn sm primary" data-view-receipts="' + esc(c.id) + '">View receipts</button><button type="button" class="btn sm ghost" data-close>Close</button></div>');
+  }
+  function addClientModal() {
+    openModal('Add client',
+      '<form id="clientForm" autocomplete="off">' +
+      '<div class="field"><label for="ncName">Client name</label><input class="input" id="ncName" type="text" maxlength="60" placeholder="e.g. Sample Trading Corp."></div>' +
+      '<div class="two-col"><div class="field"><label for="ncType">Engagement type</label><select class="select" id="ncType">' + TYPES.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="ncStatus">Status</label><select class="select" id="ncStatus">' + STATUSES.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="btn-row" style="margin-top:0"><button type="submit" class="btn primary">Add client</button><button type="button" class="btn ghost" data-close>Cancel</button></div></form>');
+    $('#ncName').focus();
+  }
+
+  /* ---------- Reports (real CSV downloads) ---------- */
+  function csv(rows) { return rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n'); }
+  function download(name, rows) {
+    var blob = new Blob(['﻿' + csv(rows)], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+  }
+  function alertText(a) {
+    return a.type === 'ghost'
+      ? 'Ghost vendor ' + a.g.vendor + ' (TIN ' + a.g.tin + ') across ' + a.g.clients.length + ' clients: ' + a.g.clients.map(cname).join('; ')
+      : 'Duplicate invoice #' + a.r.invoice + ' for ' + cname(a.r.client) + ' (' + a.r.vendor + ', ' + peso(a.r.amt) + ')';
+  }
+  var REPORTS = {
+    risk: function () {
+      return ['dcm-client-risk-report', [['Client', 'Engagement', 'Status', 'Risk score (%)', 'Risk level', 'Anomalies']].concat(
+        S.clients.slice().sort(function (a, b) { return b.score - a.score; }).map(function (c) { return [c.name, c.type, c.status, c.score, LV[level(c.score)], c.anomalies]; }))];
+    },
+    fraud: function () {
+      return ['dcm-fraud-anomaly-report', [['Type', 'Details', 'Review status']].concat(
+        analyze().alerts.map(function (a) { return [a.type === 'ghost' ? 'Ghost vendor' : 'Duplicate invoice', alertText(a), astatus(a)]; }))];
+    },
+    receipts: function () {
+      var an = analyze();
+      return ['dcm-receipt-register', [['Date', 'Client', 'Vendor', 'TIN', 'Invoice #', 'Amount (PHP)', 'Flags']].concat(
+        S.receipts.map(function (r) { return [r.date, cname(r.client), r.vendor, r.tin, r.invoice, Number(r.amt).toFixed(2), (an.flags[r.id] || []).join('; ') || 'Clear']; }))];
+    },
+    deadlines: function () {
+      return ['dcm-deadline-schedule', [['Task', 'Client', 'Due date', 'Status']].concat(
+        S.deadlines.map(function (d) { return [d.task, cname(d.client), d.due, dlInfo(d).label]; }))];
+    },
+    docs: function () {
+      return ['dcm-document-collection', [['Client', 'Document', 'Status', 'Reminder sent']].concat(
+        S.docs.map(function (d) { return [cname(d.client), d.what, d.note, d.reminded ? 'Yes' : 'No']; }))];
+    }
+  };
+
+  /* ---------- Router ---------- */
+  var TITLES = { command: 'Command Center', clients: 'Client Database', receipts: 'Receipt Processing', fraud: 'Fraud Analytics', deadlines: 'Deadline Tracker', reports: 'Reports', settings: 'Admin Settings' };
+  var app = $('#app'), current = null, pendingSearch = '';
+  function show(name) {
+    if (!TITLES[name]) name = 'command';
+    $$('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + name; });
+    $$('[data-view]').forEach(function (a) {
+      var on = a.dataset.view === name;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    document.title = TITLES[name] + ' | DCM & Co.';
+    if (current !== null && current !== name) { searchInput.value = ''; window.scrollTo(0, 0); }
+    if (pendingSearch) { searchInput.value = pendingSearch; pendingSearch = ''; }
+    current = name;
+    app.classList.remove('menu-open');
+    if (name === 'settings') renderSettings();
+    applyFilter();
+  }
+  function route() { show(location.hash.replace('#', '')); }
+  function go(name) { if (location.hash === '#' + name) show(name); else location.hash = name; }
+  window.addEventListener('hashchange', route);
+
+  /* ---------- Actions ---------- */
+  function runScan() {
+    var btn = $('#runScan'), label = $('span', btn);
+    btn.disabled = true; label.textContent = 'Scanning...';
+    $('.ico', btn).classList.add('spin');
+    setTimeout(function () {
+      S.scan = nowStamp(); save('scan');
+      btn.disabled = false; label.textContent = 'Run Global Audit Scan';
+      $('.ico', btn).classList.remove('spin');
+      refresh();
+      var an = analyze();
+      var open = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; }).length;
+      var high = S.clients.filter(function (c) { return level(c.score) === 'high'; }).length;
+      toast('Scan complete: ' + S.receipts.length + ' receipts checked, ' + open + ' open alert' + (open === 1 ? '' : 's') + ', ' + high + ' high-risk client' + (high === 1 ? '' : 's') + '.');
+    }, 1600);
+  }
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if (e.target.closest('#runScan')) { runScan(); return; }
+    if (e.target.closest('#bulkRemind')) {
+      var out = S.docs.filter(function (d) { return d.status !== 'received'; });
+      if (!out.length) { toast('Nothing to remind. All documents are received.'); return; }
+      out.forEach(function (d) { d.reminded = true; });
+      save('docs'); refresh();
+      toast('Reminders sent for ' + out.length + ' outstanding document' + (out.length > 1 ? 's' : '') + '.');
+      return;
+    }
+    if ((t = e.target.closest('[data-recv]'))) {
+      var d = S.docs.filter(function (x) { return x.id === t.dataset.recv; })[0];
+      if (d) { d.status = 'received'; d.note = 'Received'; save('docs'); refresh(); toast(cname(d.client) + ' - ' + d.what + ' marked as received.'); }
+      return;
+    }
+    if ((t = e.target.closest('[data-client]'))) { clientModal(t.dataset.client); return; }
+    if (e.target.closest('#addClientBtn')) { addClientModal(); return; }
+    if ((t = e.target.closest('[data-view-receipts]'))) {
+      var name = cname(t.dataset.viewReceipts);
+      closeModal(); pendingSearch = name;
+      if (location.hash === '#receipts') { searchInput.value = name; applyFilter(); } else location.hash = 'receipts';
+      return;
+    }
+    if (e.target.closest('[data-close]')) { closeModal(); return; }
+    if ((t = e.target.closest('[data-alert]'))) {
+      var id = t.dataset.alert, act = t.dataset.act;
+      S.alerts[id] = act === 'review' ? 'review' : act === 'resolve' ? 'resolved' : 'open';
+      save('alerts'); refresh();
+      toast(act === 'resolve' ? 'Alert resolved.' : act === 'review' ? 'Alert moved to review.' : 'Alert reopened.');
+      return;
+    }
+    if ((t = e.target.closest('[data-del-receipt]'))) {
+      if (confirm('Delete this receipt record?')) {
+        S.receipts = S.receipts.filter(function (r) { return r.id !== t.dataset.delReceipt; });
+        save('receipts'); refresh(); toast('Receipt deleted.');
+      }
+      return;
+    }
+    if ((t = e.target.closest('[data-toggle-dl]'))) {
+      var dl = S.deadlines.filter(function (x) { return x.id === t.dataset.toggleDl; })[0];
+      if (dl) { dl.done = !dl.done; save('deadlines'); refresh(); toast(dl.done ? 'Marked as done.' : 'Deadline reopened.'); }
+      return;
+    }
+    if ((t = e.target.closest('[data-del-dl]'))) {
+      if (confirm('Delete this deadline?')) {
+        S.deadlines = S.deadlines.filter(function (x) { return x.id !== t.dataset.delDl; });
+        save('deadlines'); refresh(); toast('Deadline deleted.');
+      }
+      return;
+    }
+    if ((t = e.target.closest('[data-report]'))) {
+      var r = REPORTS[t.dataset.report](), file = r[0] + '-' + isoToday() + '.csv';
+      download(file, r[1]); toast('Downloaded ' + file);
+      return;
+    }
+    if (e.target.closest('#resetDemo')) {
+      if (confirm('Reset all staff demo data in this browser?')) {
+        Object.keys(KEYS).forEach(function (k) { store.del(KEYS[k]); });
+        loadAll(); refresh(); renderSettings(); toast('Demo data reset.');
+      }
+    }
+  });
+
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.matches('[data-set-status]')) {
+      var c = S.clients.filter(function (x) { return x.id === t.dataset.setStatus; })[0];
+      if (c) { c.status = t.value; save('clients'); refresh(); toast('Status updated for ' + c.name + '.'); }
+      return;
+    }
+    if (t.id === 'riskFilter' || t.id === 'statusFilter') { renderClients(); applyFilter(); }
+    if (t.id === 'alertFilter') { renderFraud(); applyFilter(); }
+    if (t.id === 'deadlineFilter') { renderDeadlines(); applyFilter(); }
+  });
+
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    e.preventDefault();
+
+    if (f.id === 'receiptForm') {
+      var client = $('#rClient').value, vendor = $('#rVendor').value.trim(), tin = $('#rTin').value.trim();
+      var inv = $('#rInvoice').value.trim(), date = $('#rDate').value, amt = parseFloat($('#rAmount').value);
+      if (!client || !vendor || !tin || !inv || !date || !(amt > 0)) { toast('Please fill in every field with a valid amount.', 'error'); return; }
+      if (!/^[0-9-]{5,}$/.test(tin)) { toast('TIN should contain digits and hyphens only.', 'error'); return; }
+      var file = $('#rFile').files[0];
+      var rec = { id: uid(), client: client, vendor: vendor, tin: tin, invoice: inv, date: date, amt: Math.round(amt * 100) / 100, file: file ? file.name : (scanName || '') };
+      S.receipts.push(rec); save('receipts');
+      var flags = analyze().flags[rec.id] || [];
+      f.reset(); clearScan(); $('#rDate').value = isoToday();
+      refresh();
+      toast(flags.length ? 'Receipt recorded and flagged: ' + flags.join(', ') + '.' : 'Receipt recorded. No issues found.', flags.length ? 'error' : '');
+      return;
+    }
+
+    if (f.id === 'deadlineForm') {
+      var dc = $('#dClient').value, task = $('#dTask').value.trim(), due = $('#dDue').value;
+      if (!dc || !task || !due) { toast('Please choose a client, a task and a due date.', 'error'); return; }
+      S.deadlines.push({ id: uid(), client: dc, task: task, due: due, done: false });
+      save('deadlines'); f.reset(); refresh(); toast('Deadline added.');
+      return;
+    }
+
+    if (f.id === 'clientForm') {
+      var nm = $('#ncName').value.trim();
+      if (!nm) { toast('Please enter a client name.', 'error'); return; }
+      if (S.clients.some(function (c) { return norm(c.name) === norm(nm); })) { toast('A client with that name already exists.', 'error'); return; }
+      S.clients.push({ id: uid(), name: nm, type: $('#ncType').value, status: $('#ncStatus').value, score: 10, anomalies: 'None Detected' });
+      save('clients'); closeModal(); refresh(); toast(nm + ' added to the client database.');
+      return;
+    }
+
+    if (f.id === 'settingsForm') {
+      var name = $('#setName').value.trim(), hi = parseInt($('#setHigh').value, 10), md = parseInt($('#setMed').value, 10);
+      if (!name) { toast('Please enter a display name.', 'error'); return; }
+      if (!(hi >= 2 && hi <= 100) || !(md >= 1 && md <= 99) || md >= hi) { toast('Medium must be lower than High, between 1 and 100.', 'error'); return; }
+      S.prefs = { name: name, high: hi, med: md, nFraud: $('#prefFraud').checked, nDocs: $('#prefDocs').checked };
+      save('prefs'); refresh(); toast('Settings saved.');
+    }
+  });
+
+  searchInput.addEventListener('input', applyFilter);
+
+  /* ---------- Menu, keyboard, logout ---------- */
+  $('#menuBtn').addEventListener('click', function () { app.classList.add('menu-open'); });
+  $('#scrim').addEventListener('click', function () { app.classList.remove('menu-open'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { app.classList.remove('menu-open'); if (!modal.hidden) closeModal(); }
+  });
+  $('#logoutLink').addEventListener('click', function () {
+    try { sessionStorage.removeItem('dcm_session'); } catch (err) {}
+  });
+
+  /* ---------- Receipt scanner (camera demo) ---------- */
+  var scanner = $('#scanner'), scanVideo = $('#scanVideo'), scanMsg = $('#scanMsg'), scanSheet = $('#scanSheet');
+  var camStream = null, facing = 'environment', flashOn = false;
+  var scanName = '', pendingName = '', pendingUrl = '';
+
+  function stamp() {
+    var d = new Date(), p = function (n) { return ('0' + n).slice(-2); };
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+  }
+  function stopCam() {
+    if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+    scanVideo.srcObject = null; scanVideo.hidden = true;
+  }
+  function noCam(text) { stopCam(); scanMsg.textContent = text; scanMsg.hidden = false; }
+  function setTorch(on) {
+    try {
+      var t = camStream && camStream.getVideoTracks()[0];
+      if (t && t.applyConstraints) t.applyConstraints({ advanced: [{ torch: on }] }).catch(function () {});
+    } catch (e) {}
+  }
+  function startCam() {
+    stopCam(); scanMsg.hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      noCam('Camera is not available here. Tap the gallery button to choose a photo, or the shutter for a demo capture.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } }, audio: false }).then(function (stream) {
+      if (scanner.hidden) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      camStream = stream; scanVideo.srcObject = stream; scanVideo.hidden = false;
+      var p = scanVideo.play(); if (p && p.catch) p.catch(function () {});
+      if (flashOn) setTorch(true);
+    }).catch(function (err) {
+      noCam(err && err.name === 'NotAllowedError'
+        ? 'Camera access was blocked. Allow it in your browser settings, or use the gallery button.'
+        : 'No camera found. Tap the gallery button to choose a photo, or the shutter for a demo capture.');
+    });
+  }
+  function openScanner() {
+    scanSheet.hidden = true; scanner.hidden = false;
+    document.documentElement.classList.add('scan-open');
+    app.classList.remove('menu-open');
+    $('#scanClose').focus();
+    startCam();
+  }
+  function closeScanner() {
+    scanner.hidden = true; scanSheet.hidden = true;
+    document.documentElement.classList.remove('scan-open');
+    stopCam(); flashOn = false;
+    $('#scanFlash').setAttribute('aria-pressed', 'false'); $('#scanFlash').classList.remove('on');
+  }
+  function showResult(url, name) {
+    pendingUrl = url || ''; pendingName = name || ('scan-' + stamp() + '.jpg');
+    var th = $('#scanThumb');
+    th.style.backgroundImage = pendingUrl ? 'url("' + pendingUrl + '")' : '';
+    th.classList.toggle('has-img', !!pendingUrl);
+    scanSheet.hidden = false;
+    try { scanVideo.pause(); } catch (e) {}
+    $('#scanUse').focus();
+  }
+  function setScan(name, url) {
+    scanName = name;
+    $('#scanChipName').textContent = name;
+    $('#scanChipThumb').style.backgroundImage = url ? 'url("' + url + '")' : '';
+    $('#scanChip').hidden = false;
+  }
+  function clearScan() { scanName = ''; $('#scanChip').hidden = true; }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-scan-open]')) openScanner();
+  });
+  $('#scanClose').addEventListener('click', closeScanner);
+  $('#scanChipX').addEventListener('click', clearScan);
+  $('#scanFlash').addEventListener('click', function () {
+    flashOn = !flashOn;
+    this.setAttribute('aria-pressed', flashOn); this.classList.toggle('on', flashOn);
+    setTorch(flashOn);
+  });
+  $('#scanFlip').addEventListener('click', function () { facing = facing === 'environment' ? 'user' : 'environment'; startCam(); });
+  $('#scanGallery').addEventListener('click', function () { $('#scanFile').click(); });
+  $('#scanFile').addEventListener('change', function () {
+    var f = this.files[0]; this.value = '';
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () { showResult(String(rd.result), f.name); };
+    rd.readAsDataURL(f);
+  });
+  $('#scanShutter').addEventListener('click', function () {
+    var fx = $('#scanFx'); fx.classList.remove('go'); void fx.offsetWidth; fx.classList.add('go');
+    var url = '';
+    if (camStream && scanVideo.videoWidth) {
+      var w = Math.min(1280, scanVideo.videoWidth), h = Math.round(w * scanVideo.videoHeight / scanVideo.videoWidth);
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      try { c.getContext('2d').drawImage(scanVideo, 0, 0, w, h); url = c.toDataURL('image/jpeg', 0.85); } catch (err) {}
+    }
+    setTimeout(function () { showResult(url); }, 180);
+  });
+  $('#scanRetake').addEventListener('click', function () {
+    scanSheet.hidden = true;
+    try { var p = scanVideo.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    $('#scanShutter').focus();
+  });
+  $('#scanUse').addEventListener('click', function () {
+    setScan(pendingName, pendingUrl);
+    closeScanner(); go('receipts');
+    toast('Scan attached. Fill in the receipt details, then record it.');
+    setTimeout(function () { $('#rVendor').focus(); }, 60);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !scanner.hidden) closeScanner(); });
+
+  /* ---------- Init ---------- */
+  loadAll();
+  $('#rDate').value = isoToday();
+  refresh();
+  renderSettings();
+  route();
+})();
+</script>
+</body>
+</html>
