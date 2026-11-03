@@ -313,3 +313,9 @@ html[data-theme="dark"] .foot-links h5{ color:var(--d-text,#E7EEF4); }
 html[data-theme="dark"] .foot-brand .brand-name .c{ color:var(--cyan); }
 html[data-theme="dark"] .legend-row,
 html[data-theme="dark"] .doc-item{ background:transparent; border-color:var(--line); }
+
+/* Login card: rounded border */
+.auth-card,
+html[data-theme="dark"] .auth-card{ border:1px solid var(--line); border-radius:16px; padding:36px 32px; box-shadow:none; }
+.auth-card .auth-note{ border-radius:0 0 12px 12px; }
+@media (max-width:480px){ .auth-card,html[data-theme="dark"] .auth-card{ padding:28px 20px; } }
