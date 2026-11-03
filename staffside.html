@@ -49,6 +49,12 @@
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
   <symbol id="i-flip" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-folder-plus" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M12 11v6M9 14h6"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
 </svg>
@@ -66,6 +72,7 @@
     <ul class="nav-menu grow">
       <li><a href="#command" data-view="command"><svg class="ico"><use href="#i-pie"/></svg>Command Center</a></li>
       <li><a href="#clients" data-view="clients"><svg class="ico"><use href="#i-users"/></svg>Client Database</a></li>
+      <li><a href="#files" data-view="files"><svg class="ico"><use href="#i-folder"/></svg>Client Files</a></li>
       <li><a href="#receipts" data-view="receipts"><svg class="ico"><use href="#i-scan"/></svg>Receipt Processing (OCR)</a></li>
       <li><a href="#fraud" data-view="fraud"><svg class="ico"><use href="#i-alert"/></svg>Fraud Analytics<span class="nav-count" id="navAlerts" hidden>0</span></a></li>
       <li><a href="#deadlines" data-view="deadlines"><svg class="ico"><use href="#i-clock"/></svg>Deadline Tracker</a></li>
@@ -184,6 +191,39 @@
             </table>
           </div>
           <div class="empty" hidden>No clients match your filters.</div>
+        </section>
+      </div>
+
+      <!-- ===================== CLIENT FILES ===================== -->
+      <div class="view" id="view-files" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Client Files</h1>
+            <p>Keep every client's documents in folders, like a shared drive.</p>
+          </div>
+          <div class="head-actions">
+            <button type="button" class="btn ghost" id="newFolderBtn"><svg class="ico"><use href="#i-folder-plus"/></svg>New folder</button>
+            <button type="button" class="btn primary" id="uploadBtn"><svg class="ico"><use href="#i-upload"/></svg>Upload files</button>
+            <input type="file" id="fileInput" multiple hidden>
+          </div>
+        </div>
+        <section class="card drive" id="drive">
+          <div class="drive-bar">
+            <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
+            <div class="drive-tools">
+              <select class="select" id="fileSort" aria-label="Sort files">
+                <option value="name">Name</option>
+                <option value="new">Newest first</option>
+                <option value="size">Largest first</option>
+              </select>
+              <div class="seg" role="group" aria-label="View">
+                <button type="button" data-fview="grid" aria-label="Grid view" title="Grid view"><svg class="ico"><use href="#i-grid"/></svg></button>
+                <button type="button" data-fview="list" aria-label="List view" title="List view"><svg class="ico"><use href="#i-list"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div id="driveBody"></div>
+          <div class="drop-fx" id="dropFx" hidden><span>Drop files to upload here</span></div>
         </section>
       </div>
 
@@ -488,7 +528,7 @@
 
   var KEYS = {
     clients: 'dcm_staff_clients', receipts: 'dcm_staff_receipts', docs: 'dcm_staff_docs',
-    deadlines: 'dcm_staff_deadlines', alerts: 'dcm_staff_alerts', prefs: 'dcm_staff_prefs', scan: 'dcm_staff_scan'
+    deadlines: 'dcm_staff_deadlines', alerts: 'dcm_staff_alerts', prefs: 'dcm_staff_prefs', scan: 'dcm_staff_scan', files: 'dcm_staff_files'
   };
 
   /* ---------- Sample data ---------- */
@@ -529,7 +569,8 @@
     ],
     alerts: {},
     prefs: { name: '', high: 75, med: 50, nFraud: true, nDocs: true },
-    scan: ''
+    scan: '',
+    files: { folders: [], files: [] }
   };
   var S = {};
   function loadAll() { Object.keys(DEF).forEach(function (k) { S[k] = store.get(KEYS[k], JSON.parse(JSON.stringify(DEF[k]))); }); }
@@ -770,6 +811,7 @@
   var searchInput = $('#searchInput');
   function applyFilter() {
     var q = searchInput.value.trim().toLowerCase();
+    if (current === 'files') renderFiles();
     $$('.filterable').forEach(function (el) {
       el.hidden = !!q && el.textContent.toLowerCase().indexOf(q) === -1;
     });
@@ -782,7 +824,7 @@
   }
   function refresh() {
     fillSelects();
-    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines();
+    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines(); renderFiles();
     updateUser(); applyFilter();
   }
 
@@ -795,7 +837,7 @@
     modal.hidden = false;
     $('.dialog', modal).focus();
   }
-  function closeModal() { modal.hidden = true; $('#modalBody').innerHTML = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function closeModal() { modal.hidden = true; $('#modalBody').innerHTML = ''; $('.dialog', modal).classList.remove('wide'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
 
   function clientModal(id) {
     var c = S.clients.filter(function (x) { return x.id === id; })[0];
@@ -815,7 +857,7 @@
         '<div class="box"><small>Open deadlines</small><b>' + dls + '</b></div>' +
       '</div>' +
       '<div class="field"><label for="clientStatus">Engagement status</label><select class="select" id="clientStatus" data-set-status="' + esc(c.id) + '">' + opts + '</select></div>' +
-      '<div class="btn-row"><button type="button" class="btn sm primary" data-view-receipts="' + esc(c.id) + '">View receipts</button><button type="button" class="btn sm ghost" data-close>Close</button></div>');
+      '<div class="btn-row"><button type="button" class="btn sm primary" data-view-receipts="' + esc(c.id) + '">View receipts</button><button type="button" class="btn sm ghost" data-open-client-files="' + esc(c.id) + '">Open files</button><button type="button" class="btn sm ghost" data-close>Close</button></div>');
   }
   function addClientModal() {
     openModal('Add client',
@@ -864,8 +906,333 @@
     }
   };
 
+
+  /* ---------- Client Files (Drive-style) ---------- */
+  var FILE_MAX = 25 * 1024 * 1024;
+  var fPath = '', fQuiet = false, fUrls = {}, fMem = {}, fWarned = false;
+  var fView = store.get('dcm_staff_fview', 'grid');
+  var fSort = store.get('dcm_staff_fsort', 'name');
+
+  /* file contents live in IndexedDB (localStorage is too small for documents) */
+  var idbP = null;
+  function idb() {
+    if (idbP) return idbP;
+    idbP = new Promise(function (res, rej) {
+      try {
+        var r = indexedDB.open('dcm_staff_files', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('blobs'); };
+        r.onsuccess = function () { res(r.result); };
+        r.onerror = function () { rej(r.error); };
+      } catch (e) { rej(e); }
+    });
+    return idbP;
+  }
+  function idbRun(mode, fn) {
+    return idb().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction('blobs', mode), out = fn(tx.objectStore('blobs'));
+        tx.oncomplete = function () { res(out && out.result); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function putBlob(id, blob) { fMem[id] = blob; return idbRun('readwrite', function (st) { return st.put(blob, id); }).then(function () { return true; }, function () { return false; }); }
+  function getBlob(id) { if (fMem[id]) return Promise.resolve(fMem[id]); return idbRun('readonly', function (st) { return st.get(id); }).then(function (b) { return b || null; }, function () { return null; }); }
+  function delBlob(id) { delete fMem[id]; if (fUrls[id]) { URL.revokeObjectURL(fUrls[id]); delete fUrls[id]; } return idbRun('readwrite', function (st) { return st.delete(id); }).catch(function () {}); }
+  function clearBlobs() { fMem = {}; fUrls = {}; return idbRun('readwrite', function (st) { return st.clear(); }).catch(function () {}); }
+
+  function isClient(id) { return S.clients.some(function (c) { return c.id === id; }); }
+  function folderOf(id) { return S.files.folders.filter(function (f) { return f.id === id; })[0]; }
+  function exists(id) { return id === '' || isClient(id) || !!folderOf(id); }
+  function fname(id) { return id === '' ? 'Client Files' : isClient(id) ? cname(id) : (folderOf(id) || {}).name || 'Folder'; }
+  function parentOf(id) { return isClient(id) ? '' : (folderOf(id) || { parent: '' }).parent; }
+  function pathOf(id) { var p = []; while (id !== '' && p.length < 20) { p.unshift(id); id = parentOf(id); } return p; }
+  function subfolders(id) {
+    var list = S.files.folders.filter(function (f) { return f.parent === id; }).map(function (f) { return { id: f.id, name: f.name, client: false }; });
+    if (id === '') list = S.clients.map(function (c) { return { id: c.id, name: c.name, client: true }; }).concat(list);
+    return list;
+  }
+  function filesIn(id) { return S.files.files.filter(function (f) { return f.folder === id; }); }
+  function descendants(id) {
+    var out = [id];
+    S.files.folders.filter(function (f) { return f.parent === id; }).forEach(function (f) { out = out.concat(descendants(f.id)); });
+    return out;
+  }
+  function fmtSize(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
+  function fmtWhen(t) { return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  function extOf(n) { var m = /\.([a-z0-9]+)$/i.exec(n); return m ? m[1].toLowerCase() : ''; }
+  function kindOf(f) {
+    var e = extOf(f.name), t = f.type || '';
+    if (t.indexOf('image/') === 0 || /^(png|jpe?g|gif|webp|bmp|heic)$/.test(e)) return 'img';
+    if (e === 'pdf' || t === 'application/pdf') return 'pdf';
+    if (/^(xlsx?|csv|ods)$/.test(e)) return 'xls';
+    if (/^(docx?|odt|rtf)$/.test(e)) return 'doc';
+    if (/^(txt|md|log)$/.test(e) || t.indexOf('text/') === 0) return 'txt';
+    return 'file';
+  }
+  var KIND_LABEL = { img: 'IMG', pdf: 'PDF', xls: 'XLS', doc: 'DOC', txt: 'TXT', file: 'FILE' };
+  function uniqueName(name, siblings) {
+    var names = siblings.map(function (n) { return n.toLowerCase(); });
+    if (names.indexOf(name.toLowerCase()) < 0) return name;
+    var dot = name.lastIndexOf('.'), base = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : '', i = 2;
+    while (names.indexOf((base + ' (' + i + ')' + ext).toLowerCase()) >= 0) i++;
+    return base + ' (' + i + ')' + ext;
+  }
+
+  function tileHTML(f) {
+    var k = kindOf(f);
+    if (k === 'img') return '<div class="ftile img"><img alt="" data-thumb="' + esc(f.id) + '"><span>IMG</span></div>';
+    return '<div class="ftile ' + k + '"><span>' + KIND_LABEL[k] + '</span></div>';
+  }
+  function actionsHTML(kind, id, locked) {
+    var b = '';
+    if (kind === 'file') b += '<button type="button" class="ibtn" data-f-dl="' + id + '" aria-label="Download" title="Download">' + ico('download') + '</button>';
+    if (!locked) {
+      b += '<button type="button" class="ibtn" data-f-ren="' + kind + ':' + id + '" aria-label="Rename" title="Rename">' + ico('edit') + '</button>';
+      b += '<button type="button" class="ibtn del" data-f-del="' + kind + ':' + id + '" aria-label="Delete" title="Delete">' + ico('trash') + '</button>';
+    }
+    return '<div class="facts">' + b + '</div>';
+  }
+
+  function renderFiles() {
+    if (!$('#driveBody')) return;
+    if (!exists(fPath)) fPath = '';
+    var q = searchInput.value.trim().toLowerCase();
+    $$('[data-fview]').forEach(function (b) { var on = b.dataset.fview === fView; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    $('#fileSort').value = fSort;
+
+    /* breadcrumbs */
+    var crumbs = '<a href="#files" class="crumb' + (fPath === '' && !q ? ' cur' : '') + '" data-open-folder="">Client Files</a>';
+    pathOf(fPath).forEach(function (id, i, a) {
+      crumbs += '<svg class="ico sep"><use href="#i-chev"/></svg><a href="#files/' + encodeURIComponent(id) + '" class="crumb' + (i === a.length - 1 && !q ? ' cur' : '') + '" data-open-folder="' + esc(id) + '">' + esc(fname(id)) + '</a>';
+    });
+    if (q) crumbs += '<svg class="ico sep"><use href="#i-chev"/></svg><span class="crumb cur">Search: &ldquo;' + esc(searchInput.value.trim()) + '&rdquo;</span>';
+    $('#crumbs').innerHTML = crumbs;
+
+    var folders, files, here = fPath;
+    if (q) {
+      var all = S.clients.map(function (c) { return { id: c.id, name: c.name, client: true }; })
+        .concat(S.files.folders.map(function (f) { return { id: f.id, name: f.name, client: false }; }));
+      folders = all.filter(function (f) { return f.name.toLowerCase().indexOf(q) >= 0; });
+      files = S.files.files.filter(function (f) { return f.name.toLowerCase().indexOf(q) >= 0; });
+    } else { folders = subfolders(here); files = filesIn(here); }
+
+    var by = {
+      name: function (a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1; },
+      new: function (a, b) { return (b.added || 0) - (a.added || 0); },
+      size: function (a, b) { return (b.size || 0) - (a.size || 0); }
+    };
+    folders = folders.slice().sort(by.name);
+    files = files.slice().sort(by[fSort] || by.name);
+
+    var body = $('#driveBody');
+    if (!folders.length && !files.length) {
+      body.innerHTML = '<div class="empty drive-empty">' + (q ? 'No files or folders match your search.' :
+        '<div class="big">' + ico('folder') + '</div><b>This folder is empty</b><br>Drag files here, or use <b>Upload files</b>.') + '</div>';
+      return;
+    }
+
+    var list = fView === 'list' || !!q, h = '';
+    function pathLabel(id) { var p = pathOf(id); return p.length ? p.map(fname).join(' / ') : 'Client Files'; }
+    if (list) {
+      h += '<div class="flist"><div class="frow head"><span>Name</span><span>' + (q ? 'Location' : 'Modified') + '</span><span>Size</span><span></span></div>';
+      folders.forEach(function (f) {
+        var n = subfolders(f.id).length + filesIn(f.id).length;
+        h += '<div class="frow" data-folder="' + esc(f.id) + '"><a class="fmain" href="#files/' + encodeURIComponent(f.id) + '" data-open-folder="' + esc(f.id) + '"><span class="fold">' + ico('folder') + '</span><span class="fn">' + esc(f.name) + (f.client ? ' <em class="tag">Client</em>' : '') + '</span></a><span class="fm">' + (q ? esc(pathLabel(parentOf(f.id))) : n + ' item' + (n === 1 ? '' : 's')) + '</span><span class="fm">&mdash;</span>' + actionsHTML('folder', esc(f.id), f.client) + '</div>';
+      });
+      files.forEach(function (f) {
+        h += '<div class="frow" data-file="' + esc(f.id) + '"><button type="button" class="fmain" data-f-open="' + esc(f.id) + '">' + tileHTML(f).replace('ftile', 'ftile sm') + '<span class="fn">' + esc(f.name) + '</span></button><span class="fm">' + (q ? esc(pathLabel(f.folder)) : fmtWhen(f.added)) + '</span><span class="fm">' + fmtSize(f.size) + '</span>' + actionsHTML('file', esc(f.id)) + '</div>';
+      });
+      h += '</div>';
+    } else {
+      if (folders.length) {
+        h += '<div class="fsec">Folders</div><div class="fgrid">';
+        folders.forEach(function (f) {
+          var n = subfolders(f.id).length + filesIn(f.id).length;
+          h += '<div class="fcard folder" data-folder="' + esc(f.id) + '"><a class="fmain" href="#files/' + encodeURIComponent(f.id) + '" data-open-folder="' + esc(f.id) + '"><span class="fold">' + ico('folder') + '</span><span class="fn">' + esc(f.name) + '</span><span class="fm">' + n + ' item' + (n === 1 ? '' : 's') + (f.client ? ' &middot; Client' : '') + '</span></a>' + actionsHTML('folder', esc(f.id), f.client) + '</div>';
+        });
+        h += '</div>';
+      }
+      if (files.length) {
+        h += '<div class="fsec">Files</div><div class="fgrid">';
+        files.forEach(function (f) {
+          h += '<div class="fcard" data-file="' + esc(f.id) + '"><button type="button" class="fmain" data-f-open="' + esc(f.id) + '">' + tileHTML(f) + '<span class="fn">' + esc(f.name) + '</span><span class="fm">' + fmtSize(f.size) + ' &middot; ' + fmtWhen(f.added) + '</span></button>' + actionsHTML('file', esc(f.id)) + '</div>';
+        });
+        h += '</div>';
+      }
+    }
+    body.innerHTML = h;
+
+    $$('img[data-thumb]', body).forEach(function (img) {
+      var id = img.dataset.thumb;
+      if (fUrls[id]) { img.src = fUrls[id]; img.parentNode.classList.add('has'); return; }
+      getBlob(id).then(function (b) {
+        if (!b) return;
+        fUrls[id] = URL.createObjectURL(b);
+        img.onload = function () { img.parentNode.classList.add('has'); };
+        img.src = fUrls[id];
+      });
+    });
+  }
+
+  function openFolder(id) {
+    if (searchInput.value) searchInput.value = '';
+    var h = id ? 'files/' + encodeURIComponent(id) : 'files';
+    if (location.hash === '#' + h) { fPath = id; renderFiles(); } else location.hash = h;
+  }
+
+  function addFiles(list, target) {
+    target = target === undefined ? fPath : target;
+    if (target === '') { toast('Open a client folder first, then upload.', 'error'); return; }
+    var items = Array.prototype.slice.call(list || []);
+    if (!items.length) return;
+    var ok = 0, big = 0, chain = Promise.resolve();
+    items.forEach(function (file) {
+      if (file.size > FILE_MAX) { big++; return; }
+      chain = chain.then(function () {
+        var id = uid();
+        return putBlob(id, file).then(function (saved) {
+          if (!saved && !fWarned) { fWarned = true; toast('Storage is unavailable here, so files last only until you close this tab.', 'error'); }
+          var name = uniqueName(file.name, filesIn(target).map(function (f) { return f.name; }));
+          S.files.files.push({ id: id, name: name, folder: target, size: file.size, type: file.type || '', added: Date.now(), by: (S.prefs.name || (session && session.email) || 'Staff') });
+          ok++;
+        });
+      });
+    });
+    chain.then(function () {
+      save('files'); renderFiles();
+      if (ok) toast(ok + ' file' + (ok > 1 ? 's' : '') + ' uploaded to ' + fname(target).replace(/\.$/, '') + '.');
+      if (big) toast(big + ' file' + (big > 1 ? 's were' : ' was') + ' skipped (25 MB limit).', 'error');
+    });
+  }
+
+  function folderModal() {
+    openModal('New folder',
+      '<form id="folderForm" autocomplete="off"><div class="field"><label for="fldName">Folder name</label><input class="input" id="fldName" type="text" maxlength="60" placeholder="e.g. 2026 Receipts"></div>' +
+      '<div class="btn-row" style="margin-top:0"><button type="submit" class="btn primary">Create</button><button type="button" class="btn ghost" data-close>Cancel</button></div></form>');
+    $('#fldName').focus();
+  }
+  function renameModal(kind, id) {
+    var cur = kind === 'file' ? (S.files.files.filter(function (f) { return f.id === id; })[0] || {}).name : (folderOf(id) || {}).name;
+    if (!cur) return;
+    openModal('Rename ' + kind,
+      '<form id="renameForm" data-kind="' + kind + '" data-id="' + esc(id) + '" autocomplete="off"><div class="field"><label for="renName">Name</label><input class="input" id="renName" type="text" maxlength="100" value="' + esc(cur) + '"></div>' +
+      '<div class="btn-row" style="margin-top:0"><button type="submit" class="btn primary">Save</button><button type="button" class="btn ghost" data-close>Cancel</button></div></form>');
+    var inp = $('#renName'); inp.focus();
+    var dot = kind === 'file' ? cur.lastIndexOf('.') : -1;
+    inp.setSelectionRange(0, dot > 0 ? dot : cur.length);
+  }
+
+  function previewFile(id) {
+    var f = S.files.files.filter(function (x) { return x.id === id; })[0];
+    if (!f) return;
+    getBlob(id).then(function (blob) {
+      var k = kindOf(f), meta = '<p class="pv-meta">' + fmtSize(f.size) + ' &middot; Added ' + fmtWhen(f.added) + ' by ' + esc(f.by || 'Staff') + '<br>In ' + esc(pathOf(f.folder).map(fname).join(' / ')) + '</p>';
+      var actions = '<div class="btn-row"><button type="button" class="btn sm primary" data-f-dl="' + esc(id) + '">' + ico('download') + 'Download</button><button type="button" class="btn sm ghost" data-close>Close</button></div>';
+      if (!blob) { openModal(f.name, meta + '<div class="empty">This file&rsquo;s contents are not available in this browser session.</div>' + '<div class="btn-row"><button type="button" class="btn sm ghost" data-close>Close</button></div>'); return; }
+      if (k === 'img' || k === 'pdf') {
+        if (!fUrls[id]) fUrls[id] = URL.createObjectURL(blob);
+        openModal(f.name, meta + '<div class="pv-box">' + (k === 'img' ? '<img alt="' + esc(f.name) + '" src="' + fUrls[id] + '">' : '<iframe title="' + esc(f.name) + '" src="' + fUrls[id] + '"></iframe>') + '</div>' + actions);
+      } else if (k === 'txt' && blob.size < 200000) {
+        var r = new FileReader();
+        r.onload = function () { openModal(f.name, meta + '<pre class="pv-text">' + esc(r.result) + '</pre>' + actions); };
+        r.readAsText(blob);
+      } else {
+        openModal(f.name, meta + '<div class="empty">No preview for this file type. Download it to open it.</div>' + actions);
+      }
+      $('.dialog', modal).classList.add('wide');
+    });
+  }
+  function downloadFile(id) {
+    var f = S.files.files.filter(function (x) { return x.id === id; })[0];
+    if (!f) return;
+    getBlob(id).then(function (blob) {
+      if (!blob) { toast('That file is not available in this browser session.', 'error'); return; }
+      var u = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = u; a.download = f.name; document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(u); }, 400);
+    });
+  }
+  function deleteItem(kind, id) {
+    if (kind === 'file') {
+      var f = S.files.files.filter(function (x) { return x.id === id; })[0];
+      if (!f || !confirm('Delete "' + f.name + '"? This cannot be undone.')) return;
+      S.files.files = S.files.files.filter(function (x) { return x.id !== id; });
+      delBlob(id); save('files'); renderFiles(); toast('File deleted.');
+    } else {
+      var fo = folderOf(id); if (!fo) return;
+      var ids = descendants(id), n = S.files.files.filter(function (x) { return ids.indexOf(x.folder) >= 0; }).length;
+      if (!confirm('Delete folder "' + fo.name + '"' + (n ? ' and the ' + n + ' file' + (n > 1 ? 's' : '') + ' inside it' : '') + '? This cannot be undone.')) return;
+      S.files.files.filter(function (x) { return ids.indexOf(x.folder) >= 0; }).forEach(function (x) { delBlob(x.id); });
+      S.files.files = S.files.files.filter(function (x) { return ids.indexOf(x.folder) < 0; });
+      S.files.folders = S.files.folders.filter(function (x) { return ids.indexOf(x.id) < 0; });
+      if (ids.indexOf(fPath) >= 0) fPath = fo.parent;
+      save('files'); renderFiles(); toast('Folder deleted.');
+    }
+  }
+
+  $('#uploadBtn').addEventListener('click', function () {
+    if (fPath === '' || searchInput.value) { toast('Open a client folder first, then upload.', 'error'); return; }
+    $('#fileInput').click();
+  });
+  $('#fileInput').addEventListener('change', function () { addFiles(this.files); this.value = ''; });
+  $('#newFolderBtn').addEventListener('click', function () { if (searchInput.value) searchInput.value = ''; folderModal(); });
+  $('#fileSort').addEventListener('change', function () { fSort = this.value; store.set('dcm_staff_fsort', fSort); renderFiles(); });
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-fview]'))) { fView = t.dataset.fview; store.set('dcm_staff_fview', fView); renderFiles(); return; }
+    if ((t = e.target.closest('[data-open-folder]'))) { e.preventDefault(); openFolder(t.dataset.openFolder); return; }
+    if ((t = e.target.closest('[data-f-open]'))) { previewFile(t.dataset.fOpen); return; }
+    if ((t = e.target.closest('[data-f-dl]'))) { downloadFile(t.dataset.fDl); return; }
+    if ((t = e.target.closest('[data-f-ren]'))) { var r = t.dataset.fRen.split(':'); renameModal(r[0], r.slice(1).join(':')); return; }
+    if ((t = e.target.closest('[data-f-del]'))) { var d = t.dataset.fDel.split(':'); deleteItem(d[0], d.slice(1).join(':')); return; }
+    if ((t = e.target.closest('[data-open-client-files]'))) { closeModal(); openFolder(t.dataset.openClientFiles); }
+  });
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (form.id === 'folderForm') {
+      e.preventDefault();
+      var nm = $('#fldName').value.trim();
+      if (!nm) { toast('Enter a folder name.', 'error'); return; }
+      var sibs = subfolders(fPath).map(function (f) { return f.name; });
+      nm = uniqueName(nm, sibs);
+      S.files.folders.push({ id: uid(), name: nm, parent: fPath, created: Date.now() });
+      save('files'); closeModal(); renderFiles(); toast('Folder "' + nm + '" created.');
+    } else if (form.id === 'renameForm') {
+      e.preventDefault();
+      var v = $('#renName').value.trim(), id = form.dataset.id;
+      if (!v) { toast('Enter a name.', 'error'); return; }
+      if (form.dataset.kind === 'file') {
+        var f = S.files.files.filter(function (x) { return x.id === id; })[0];
+        if (f) f.name = uniqueName(v, filesIn(f.folder).filter(function (x) { return x.id !== id; }).map(function (x) { return x.name; }));
+      } else {
+        var fo = folderOf(id);
+        if (fo) fo.name = uniqueName(v, subfolders(fo.parent).filter(function (x) { return x.id !== id; }).map(function (x) { return x.name; }));
+      }
+      save('files'); closeModal(); renderFiles(); toast('Renamed.');
+    }
+  });
+
+  /* drag & drop (drop on the page = current folder, drop on a folder = that folder) */
+  (function () {
+    var drive = $('#drive'), fx = $('#dropFx'), depth = 0;
+    function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+    drive.addEventListener('dragenter', function (e) { if (!hasFiles(e)) return; e.preventDefault(); depth++; fx.hidden = false; });
+    drive.addEventListener('dragover', function (e) { if (hasFiles(e)) e.preventDefault(); });
+    drive.addEventListener('dragleave', function () { depth = Math.max(0, depth - 1); if (!depth) fx.hidden = true; });
+    drive.addEventListener('drop', function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault(); depth = 0; fx.hidden = true;
+      var fo = e.target.closest('[data-folder]');
+      addFiles(e.dataTransfer.files, fo ? fo.dataset.folder : (searchInput.value ? '' : fPath));
+    });
+    window.addEventListener('dragover', function (e) { if (hasFiles(e)) e.preventDefault(); });
+    window.addEventListener('drop', function (e) { if (hasFiles(e)) e.preventDefault(); });
+  })();
+
   /* ---------- Router ---------- */
-  var TITLES = { command: 'Command Center', clients: 'Client Database', receipts: 'Receipt Processing', fraud: 'Fraud Analytics', deadlines: 'Deadline Tracker', reports: 'Reports', settings: 'Admin Settings' };
+  var TITLES = { command: 'Command Center', clients: 'Client Database', files: 'Client Files', receipts: 'Receipt Processing', fraud: 'Fraud Analytics', deadlines: 'Deadline Tracker', reports: 'Reports', settings: 'Admin Settings' };
   var app = $('#app'), current = null, pendingSearch = '';
   function show(name) {
     if (!TITLES[name]) name = 'command';
@@ -881,9 +1248,14 @@
     current = name;
     app.classList.remove('menu-open');
     if (name === 'settings') renderSettings();
+    if (name === 'files') renderFiles();
     applyFilter();
   }
-  function route() { show(location.hash.replace('#', '')); }
+  function route() {
+    var h = location.hash.replace('#', '').split('/');
+    if (h[0] === 'files') fPath = decodeURIComponent(h.slice(1).join('/') || '');
+    show(h[0]);
+  }
   function go(name) { if (location.hash === '#' + name) show(name); else location.hash = name; }
   window.addEventListener('hashchange', route);
 
@@ -963,6 +1335,7 @@
     if (e.target.closest('#resetDemo')) {
       if (confirm('Reset all staff demo data in this browser?')) {
         Object.keys(KEYS).forEach(function (k) { store.del(KEYS[k]); });
+        clearBlobs(); fPath = '';
         loadAll(); refresh(); renderSettings(); toast('Demo data reset.');
       }
     }
