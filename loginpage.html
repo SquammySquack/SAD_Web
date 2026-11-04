@@ -24,11 +24,11 @@
 
     <div class="side-copy">
       <h2>Diligence & <span>Commitment</span> Matter</h2>
-      <p>Sign in to the Fraud & Anomaly Detection System with Smart Spending Tracker.</p>
+      <p>Welcome back. Your documents, spending and alerts are waiting.</p>
       <ul class="points">
-        <li><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>Ghost vendor and duplicate invoice detection</li>
-        <li><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 6-7"/></svg>Machine learning risk scoring per client</li>
-        <li><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>Real-time alerts and automated reports</li>
+        <li><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>Catches ghost vendors and duplicate invoices</li>
+        <li><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 6-7"/></svg>AI-powered risk scores for every client</li>
+        <li><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>Instant alerts and ready-made reports</li>
       </ul>
     </div>
 
@@ -44,7 +44,7 @@
 
     <div class="auth-card">
       <h1 id="title">Client Login</h1>
-      <p class="sub" id="subtitle">Access your documents, spending reports, and alerts.</p>
+      <p class="sub" id="subtitle">Log in to send documents, check your spending and read alerts from your CPA.</p>
 
       <div class="role-switch" role="tablist" aria-label="Login type">
         <button type="button" role="tab" data-role="client" class="active" aria-selected="true">Client</button>
@@ -57,7 +57,7 @@
           <div class="input-wrap">
             <input type="email" id="identifier" name="identifier" placeholder="you@company.com" autocomplete="username" required>
           </div>
-          <div class="field-error" id="idError">Enter a valid email address.</div>
+          <div class="field-error" id="idError" role="alert">Enter your email.</div>
         </div>
 
         <div class="field" id="pwField">
@@ -68,7 +68,7 @@
               <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
-          <div class="field-error">Enter your password.</div>
+          <div class="field-error" id="pwError" role="alert">Enter your password to continue.</div>
         </div>
 
         <div class="row-between">
@@ -76,11 +76,11 @@
           <a href="#" class="link tap" id="forgot">Forgot password?</a>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn">Log in as Client</button>
+        <button type="submit" class="btn-submit" id="submitBtn">Log in to my portal</button>
         <div class="status" id="status" role="status" aria-live="polite"></div>
       </form>
 
-      <p class="auth-note" id="note">Staff member? Switch to the Staff tab above.</p>
+      <p class="auth-note" id="note">On the DCM & Co. team? Use the Staff tab.</p>
     </div>
   </section>
 
@@ -91,19 +91,19 @@
   var roles = {
     client: {
       title: 'Client Login',
-      sub: 'Access your documents, spending reports, and alerts.',
+      sub: 'Log in to send documents, check your spending and read alerts from your CPA.',
       label: 'Email address',
       placeholder: 'you@company.com',
-      button: 'Log in as Client',
-      note: 'Staff member? Switch to the Staff tab above.'
+      button: 'Log in to my portal',
+      note: 'On the DCM & Co. team? Use the Staff tab.'
     },
     staff: {
       title: 'Staff Login',
-      sub: 'Review risk scores, client records, and fraud reports.',
+      sub: 'Log in to check client risk, review alerts and manage client files.',
       label: 'Staff email',
       placeholder: 'name@dcmco.com',
-      button: 'Log in as Staff',
-      note: 'Clients should use the Client tab above.'
+      button: 'Log in to the staff portal',
+      note: 'Are you a client? Use the Client tab.'
     }
   };
 
@@ -146,6 +146,15 @@
     $(fieldId).querySelector('.input-wrap').classList.toggle('invalid', bad);
   }
 
+  function checkEmail() {
+    var v = idInput.value.trim(), ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    $('idError').textContent = !v ? 'Enter your email so we know who\u2019s logging in.' : 'That email doesn\u2019t look right. Try something like name@company.com.';
+    setInvalid('idField', !ok);
+    return ok;
+  }
+  function checkPw() { var ok = pwInput.value.length > 0; setInvalid('pwField', !ok); return ok; }
+  idInput.addEventListener('blur', function (e) { if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('button')) return; if (idInput.value.trim()) checkEmail(); });
+
   tabs.forEach(function (t) {
     t.addEventListener('click', function () { setRole(t.dataset.role, true); });
   });
@@ -161,18 +170,16 @@
 
   $('forgot').addEventListener('click', function (e) {
     e.preventDefault();
-    showStatus('info', 'Password reset is not set up yet. Please contact your administrator.');
+    showStatus('info', 'Password reset isn\u2019t available yet. Ask your administrator to reset it for you.');
   });
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     hideStatus();
 
-    var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(idInput.value.trim());
-    var pwOk = pwInput.value.length > 0;
-    setInvalid('idField', !emailOk);
-    setInvalid('pwField', !pwOk);
-    if (!emailOk || !pwOk) return;
+    var emailOk = checkEmail(), pwOk = checkPw();
+    if (!emailOk) { idInput.focus(); return; }
+    if (!pwOk) { pwInput.focus(); return; }
 
     // TODO: replace with a real server check (e.g. fetch('/api/login', { ... })).
     // For now any valid email + password signs the user in (front-end demo only).
@@ -181,23 +188,20 @@
         sessionStorage.setItem('dcm_session', JSON.stringify({ role: 'client', email: idInput.value.trim() }));
       } catch (err) {}
       $('submitBtn').disabled = true;
-      showStatus('info', 'Signing you in...');
+      showStatus('info', 'Taking you to your portal...');
       window.location.href = 'clientside.html';
     } else {
       try {
         sessionStorage.setItem('dcm_session', JSON.stringify({ role: 'staff', email: idInput.value.trim() }));
       } catch (err) {}
       $('submitBtn').disabled = true;
-      showStatus('info', 'Signing you in...');
+      showStatus('info', 'Taking you to your portal...');
       window.location.href = 'staffside.html';
     }
   });
 
-  [idInput, pwInput].forEach(function (el) {
-    el.addEventListener('input', function () {
-      setInvalid(el === idInput ? 'idField' : 'pwField', false);
-    });
-  });
+  idInput.addEventListener('input', function () { if ($('idField').classList.contains('invalid')) checkEmail(); });
+  pwInput.addEventListener('input', function () { if (pwInput.value) setInvalid('pwField', false); });
 
   var param = new URLSearchParams(window.location.search).get('role');
   setRole(param === 'staff' ? 'staff' : 'client', false);

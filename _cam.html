@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard | DCM & Co.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="clientside.css">
+<script src="Theme.js"></script>
+<script>
+  // Redirect to login if there is no client session
+  (function () {
+    var s = null;
+    try { s = JSON.parse(sessionStorage.getItem('dcm_session')); } catch (e) {}
+    
+  })();
+</script>
+<script>
+window.Tesseract = { recognize: function () {
+  return Promise.resolve({ data: { text: 'JOLLIBEE FOODS\nTOTAL 262.08\n11/04/2026' } });
+} };
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- Icon set -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h13v4"/><path d="M3 7v11a2 2 0 002 2h15V9H5a2 2 0 01-2-2z"/><circle cx="16.5" cy="14.5" r="1"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 8h6M9 12h6"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.5A8 8 0 1121 12z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 011-1h2M17 4h2a1 1 0 011 1v2M20 17v2a1 1 0 01-1 1h-2M7 20H5a1 1 0 01-1-1v-2"/><path d="M8 12h8"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="i-flip" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
+</svg>
+
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Main navigation">
+    <a href="index.html" class="brand" aria-label="DCM & Co. home">
+      <span class="brand-name"><span class="c">DCM</span> & Co.</span>
+      <span class="brand-sub">Client Portal</span>
+    </a>
+
+    <div class="nav-label">Menu</div>
+    <ul class="nav-menu grow">
+      <li><a href="#dashboard" data-view="dashboard"><svg class="ico"><use href="#i-home"/></svg>Dashboard</a></li>
+      <li><a href="#upload" data-view="upload"><svg class="ico"><use href="#i-upload"/></svg>Upload Documents</a></li>
+      <li><a href="#spending" data-view="spending"><svg class="ico"><use href="#i-wallet"/></svg>Spending Tracker</a></li>
+      <li><a href="#flagged" data-view="flagged"><svg class="ico"><use href="#i-flag"/></svg>Flagged Transactions</a></li>
+      <li><a href="#reports" data-view="reports"><svg class="ico"><use href="#i-report"/></svg>Financial Reports</a></li>
+      <li><a href="#messages" data-view="messages"><svg class="ico"><use href="#i-message"/></svg>Messages</a></li>
+    </ul>
+
+    <ul class="nav-menu nav-bottom">
+      <li><a href="#settings" data-view="settings"><svg class="ico"><use href="#i-settings"/></svg>Settings</a></li>
+      <li><a href="loginpage.html" id="logoutLink"><svg class="ico"><use href="#i-logout"/></svg>Log Out</a></li>
+    </ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <label class="search">
+        <svg class="ico"><use href="#i-search"/></svg>
+        <input type="text" id="searchInput" placeholder="Search receipts, vendors, or reports..." aria-label="Search" autocomplete="off">
+      </label>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode"><svg class="ico moon"><use href="#i-moon"/></svg><svg class="ico sun"><use href="#i-sun"/></svg></button>
+      <div class="user">
+        <div class="user-text">
+          <strong id="userName">Welcome, Client</strong>
+          <span>Client</span>
+        </div>
+        <div class="avatar" id="userAvatar" aria-hidden="true">C</div>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+
+      <!-- ===================== DASHBOARD ===================== -->
+      <div class="view" id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Your Financial Overview</h1>
+            <p>Where your money went, what we still need from you, and anything worth a look.</p>
+          </div>
+          <span class="chip"><i></i> Sample data</span>
+        </div>
+
+        <div class="grid-top">
+          <section class="card" aria-labelledby="spend-title">
+            <div class="card-head">
+              <h3 id="spend-title"><svg class="ico"><use href="#i-wallet"/></svg>Smart Spending Tracker</h3>
+              <a href="#spending" class="link">See spending breakdown</a>
+            </div>
+            <div class="spending">
+              <div class="spending-legend" id="spendLegend">
+                <div class="legend-row"><span class="name"><span class="dot cyan"></span>Operational</span><span><span class="amt">₱45,000</span><span class="pct">45%</span></span></div>
+                <div class="legend-row"><span class="name"><span class="dot warn"></span>Utilities</span><span><span class="amt">₱30,000</span><span class="pct">30%</span></span></div>
+                <div class="legend-row"><span class="name"><span class="dot danger"></span>Misc/Other</span><span><span class="amt">₱25,000</span><span class="pct">25%</span></span></div>
+              </div>
+              <div class="donut" id="spendDonut" role="img" aria-label="Spending split by category">
+                <div class="donut-text"><strong id="donutTotal">₱0</strong><span>Total Spend</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="doc-title">
+            <div class="card-head">
+              <h3 id="doc-title"><svg class="ico"><use href="#i-folder"/></svg>Document Requests</h3>
+            </div>
+            <div class="doc-list">
+              <div class="doc-item"><span>January Receipts</span><span class="badge pending">Pending</span></div>
+              <div class="doc-item"><span>Q1 Bank Statements</span><span class="badge verified">Verified</span></div>
+              <div class="doc-item"><span>BIR Form 2307</span><span class="badge overdue">Overdue</span></div>
+            </div>
+            <button type="button" class="btn" data-go="upload"><svg class="ico"><use href="#i-upload"/></svg>Upload the missing files</button>
+          </section>
+        </div>
+
+        <section class="card" aria-labelledby="tx-title">
+          <div class="card-head">
+            <h3 id="tx-title">Recent Transactions</h3>
+            <a href="#spending" class="link">See all transactions</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vendor Name</th><th>Invoice Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody id="txRecent"></tbody>
+            </table>
+          </div>
+          <div class="empty" hidden>We couldn’t find a match. Try a different word.</div>
+
+          <div class="alert" role="alert">
+            <svg class="ico"><use href="#i-alert"/></svg>
+            <p><strong>Fraud Alert:</strong> The transaction with <strong>XYZ Trading</strong> has been flagged by our anomaly detection system. The vendor's Tax Identification Number (TIN) appears in transactions for multiple clients, indicating a potential "Ghost Vendor." Your CPA has been notified to review this document. <a href="#flagged" class="link">Review flagged items</a></p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===================== UPLOAD ===================== -->
+      <div class="view" id="view-upload" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Upload Documents</h1>
+            <p>Send your receipts, invoices and statements. Your CPA team will take it from there.</p>
+          </div>
+        </div>
+
+        <div class="grid-top">
+          <section class="card">
+            <div class="card-head"><h3><svg class="ico"><use href="#i-upload"/></svg>Send a document</h3></div>
+
+            <div class="field">
+              <label for="docType">Document type</label>
+              <select class="select" id="docType">
+                <option>Receipt</option>
+                <option>Invoice</option>
+                <option>Bank Statement</option>
+                <option>BIR Form</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files to upload">
+              <svg class="ico"><use href="#i-upload"/></svg>
+              <strong>Drop files here, or click to browse</strong>
+              <span>PDF, JPG or PNG. Up to 10 MB each.</span>
+              <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" hidden>
+            </div>
+
+            <div class="field-error block" id="uploadErr" role="alert" hidden></div>
+
+            <div class="files" id="queue"></div>
+
+            <div class="btn-row">
+              <button type="button" class="btn inline" id="submitFiles" disabled>Send to my CPA</button>
+              <button type="button" class="btn inline ghost" id="clearFiles" disabled>Remove all</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h3><svg class="ico"><use href="#i-folder"/></svg>What your CPA is waiting for</h3></div>
+            <div class="doc-list" style="margin-bottom:0">
+              <div class="doc-item"><span>January Receipts</span><span class="badge pending">Pending</span></div>
+              <div class="doc-item"><span>Q1 Bank Statements</span><span class="badge verified">Verified</span></div>
+              <div class="doc-item"><span>BIR Form 2307</span><span class="badge overdue">Overdue</span></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="card-head"><h3>Submitted documents</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Submitted</th><th>Status</th></tr></thead>
+              <tbody id="uploadsBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="uploadsEmpty">Nothing sent yet. Upload a document and it will show up here.</div>
+        </section>
+      </div>
+
+      <!-- ===================== SPENDING ===================== -->
+      <div class="view" id="view-spending" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Spending Tracker</h1>
+            <p>See where your money goes and how it changes over time.</p>
+          </div>
+          <span class="chip"><i></i> Sample data</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><small>Total spend</small><strong id="statTotal">₱0</strong><span id="statTotalSub">Nothing recorded yet</span></div>
+          <div class="stat"><small>Largest category</small><strong id="statLargest">—</strong><span id="statLargestSub">Add a transaction to see this</span></div>
+          <div class="stat red"><small>Flagged amount</small><strong id="flaggedTotal">₱0</strong><span>Awaiting CPA review</span></div>
+        </div>
+
+        <section class="card addtx-card" aria-labelledby="addtx-title">
+          <div class="card-head">
+            <h3 id="addtx-title"><svg class="ico"><use href="#i-plus"/></svg>Add a transaction</h3>
+            <div class="seg" role="tablist" aria-label="How to add a transaction">
+              <button type="button" class="seg-btn" id="tabManual" role="tab" aria-selected="true" aria-controls="panelManual">Enter manually</button>
+              <button type="button" class="seg-btn" id="tabScan" role="tab" aria-selected="false" aria-controls="panelScan">Scan a receipt</button>
+            </div>
+          </div>
+
+          <div id="panelManual" role="tabpanel" aria-labelledby="tabManual">
+            <form novalidate id="txForm" autocomplete="off">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="txVendor">Vendor</label>
+                  <input class="input" id="txVendor" type="text" maxlength="60" placeholder="e.g. Meralco" required>
+                </div>
+                <div class="field">
+                  <label for="txAmount">Amount (₱)</label>
+                  <input class="input" id="txAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" required>
+                </div>
+                <div class="field">
+                  <label for="txDate">Invoice date</label>
+                  <input class="input" id="txDate" type="date" required>
+                </div>
+                <div class="field">
+                  <label for="txCat">Category</label>
+                  <select class="select" id="txCat">
+                    <option>Operational</option>
+                    <option>Utilities</option>
+                    <option>Misc/Other</option>
+                  </select>
+                </div>
+                <div class="field span2">
+                  <label for="txNote">Description <span class="muted small">(optional)</span></label>
+                  <input class="input" id="txNote" type="text" maxlength="60" placeholder="e.g. October electricity bill">
+                </div>
+              </div>
+              <div class="btn-row">
+                <button type="submit" class="btn inline"><svg class="ico"><use href="#i-plus"/></svg>Add transaction</button>
+                <button type="button" class="btn inline ghost" id="txReset">Clear</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="panelScan" role="tabpanel" aria-labelledby="tabScan" hidden>
+            <div class="scan-start">
+              <button type="button" class="btn inline" data-scan-open><svg class="ico"><use href="#i-camera"/></svg>Open camera</button>
+              <p class="muted small">Fit the receipt in the frame and take the photo. We read it and add it to your tracker for you.</p>
+            </div>
+            <div class="dropzone" id="receiptZone" tabindex="0" role="button" aria-label="Choose a receipt photo to read">
+              <svg class="ico"><use href="#i-scan"/></svg>
+              <strong>Or drop a receipt photo, or click to browse</strong>
+              <span>JPG or PNG. We read the vendor, date and total, then add it to your tracker.</span>
+              <input type="file" id="receiptInput" accept="image/*" hidden>
+            </div>
+            <div class="field-error block" id="receiptErr" role="alert" hidden></div>
+            <div class="ocr-status" id="ocrStatus" role="status" aria-live="polite" hidden></div>
+            <div class="ocr-result" id="ocrResult" hidden></div>
+            <p class="muted small" style="margin-top:14px">The photo is read in your browser and never uploaded.</p>
+          </div>
+        </section>
+
+        <div class="grid-2">
+          <section class="card">
+            <div class="card-head"><h3>By category</h3></div>
+            <div id="catBars"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h3>Monthly spend</h3></div>
+            <div class="chart" id="monthChart" role="img" aria-label="Monthly spending, July to October"></div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="toolbar">
+            <h3 style="font-size:17px">All transactions</h3>
+            <select class="select" id="catFilter" aria-label="Filter by category">
+              <option value="all">All categories</option>
+              <option>Operational</option>
+              <option>Utilities</option>
+              <option>Misc/Other</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vendor Name</th><th>Invoice Date</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody id="txFull"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="txEmpty" hidden>Nothing fits these filters. Try loosening them.</div>
+        </section>
+      </div>
+
+      <!-- ===================== FLAGGED ===================== -->
+      <div class="view" id="view-flagged" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Flagged Transactions</h1>
+            <p>Transactions our anomaly detection system marked for review.</p>
+          </div>
+        </div>
+        <div class="flag-list" id="flagList"></div>
+      </div>
+
+      <!-- ===================== REPORTS ===================== -->
+      <div class="view" id="view-reports" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Financial Reports</h1>
+            <p>Download your reports as CSV files that open in Excel or Google Sheets.</p>
+          </div>
+          <span class="chip"><i></i> Sample data</span>
+        </div>
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Report</th><th>Period</th><th>Format</th><th></th></tr></thead>
+              <tbody>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-report"/></svg></div><div><strong>Transactions Report</strong><span>Every transaction with vendor, date, category and status</span></div></div></td>
+                  <td>October 2026</td><td>CSV</td>
+                  <td><button type="button" class="btn inline sm ghost" data-report="transactions"><svg class="ico"><use href="#i-download"/></svg>Download CSV</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-wallet"/></svg></div><div><strong>Spending Summary</strong><span>Totals and share of spend per category</span></div></div></td>
+                  <td>October 2026</td><td>CSV</td>
+                  <td><button type="button" class="btn inline sm ghost" data-report="spending"><svg class="ico"><use href="#i-download"/></svg>Download CSV</button></td>
+                </tr>
+                <tr class="filterable">
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-flag"/></svg></div><div><strong>Fraud and Anomaly Report</strong><span>Flagged transactions and the reason for each flag</span></div></div></td>
+                  <td>October 2026</td><td>CSV</td>
+                  <td><button type="button" class="btn inline sm ghost" data-report="fraud"><svg class="ico"><use href="#i-download"/></svg>Download CSV</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="empty" hidden>We couldn’t find a report that matches. Try a different word.</div>
+        </section>
+      </div>
+
+      <!-- ===================== MESSAGES ===================== -->
+      <div class="view" id="view-messages" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Messages</h1>
+            <p>Talk to your CPA team about documents and flagged items.</p>
+          </div>
+        </div>
+        <section class="card chat">
+          <div class="chat-head">
+            <div class="avatar" aria-hidden="true">DC</div>
+            <div><strong>Your CPA Team</strong><span>DCM & Co. Certified Public Accountants</span></div>
+            <button type="button" class="btn inline sm ghost" id="clearMsgs" style="margin-left:auto" hidden>Clear my messages</button>
+          </div>
+          <div class="chat-body" id="chatBody" aria-live="polite"></div>
+          <form novalidate class="chat-form" id="chatForm" autocomplete="off">
+            <input class="input" id="chatInput" type="text" placeholder="Type your message to your CPA team..." aria-label="Message">
+            <button type="submit" class="btn inline"><svg class="ico"><use href="#i-send"/></svg>Send</button>
+          </form>
+        </section>
+        <p class="muted small" style="margin-top:12px">Demo: messages are saved in this browser only until a server is connected.</p>
+      </div>
+
+      <!-- ===================== SETTINGS ===================== -->
+      <div class="view" id="view-settings" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Settings</h1>
+            <p>Update your name and choose what we let you know about.</p>
+          </div>
+        </div>
+
+        <form novalidate id="settingsForm">
+          <section class="card settings-card">
+            <div class="card-head"><h3>Profile</h3></div>
+            <div class="field">
+              <label for="setName">Display name</label>
+              <input class="input" id="setName" type="text" maxlength="40" required>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label for="setEmail">Email</label>
+              <input class="input" id="setEmail" type="email" readonly>
+            </div>
+          </section>
+
+          <section class="card settings-card">
+            <div class="card-head"><h3>Notifications</h3></div>
+            <div class="pref">
+              <div><strong>Fraud alerts</strong><span>Tell me when a transaction is flagged</span></div>
+              <label class="switch"><input type="checkbox" id="prefFlag" aria-label="Fraud alerts"><span class="slider"></span></label>
+            </div>
+            <div class="pref">
+              <div><strong>Document reminders</strong><span>Remind me about pending and overdue requests</span></div>
+              <label class="switch"><input type="checkbox" id="prefDocs" aria-label="Document reminders"><span class="slider"></span></label>
+            </div>
+            <div class="pref">
+              <div><strong>Weekly summary</strong><span>Send a weekly spending summary</span></div>
+              <label class="switch"><input type="checkbox" id="prefWeekly" aria-label="Weekly summary"><span class="slider"></span></label>
+            </div>
+          </section>
+
+          <button type="submit" class="btn inline">Save my settings</button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Receipt camera -->
+<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a receipt" hidden>
+  <video class="scan-video" id="scanVideo" playsinline muted autoplay hidden></video>
+  <div class="scan-bg" aria-hidden="true"></div>
+
+  <div class="scan-top">
+    <button type="button" class="scan-circle" id="scanClose" aria-label="Close camera"><svg class="ico"><use href="#i-x"/></svg></button>
+    <div class="scan-hint">Snap the receipt</div>
+    <button type="button" class="scan-circle" id="scanFlash" aria-label="Toggle flash" aria-pressed="false"><svg class="ico"><use href="#i-bolt"/></svg></button>
+  </div>
+
+  <div class="vf-wrap">
+    <div class="vf" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><span class="scan-line"></span></div>
+    <p class="scan-msg" id="scanMsg" hidden></p>
+  </div>
+
+  <div class="scan-bottom">
+    <button type="button" class="scan-circle lg" id="scanGallery" aria-label="Choose a photo from your device"><svg class="ico"><use href="#i-image"/></svg></button>
+    <button type="button" class="shutter" id="scanShutter" aria-label="Take photo"><span></span></button>
+    <button type="button" class="scan-circle lg" id="scanFlip" aria-label="Switch camera"><svg class="ico"><use href="#i-flip"/></svg></button>
+  </div>
+
+  <input type="file" id="scanFile" accept="image/*" hidden>
+  <div class="scan-flash-fx" id="scanFx" aria-hidden="true"></div>
+
+  <div class="scan-sheet" id="scanSheet" hidden>
+    <div class="sheet-row">
+      <div class="scan-thumb" id="scanThumb"><svg class="ico"><use href="#i-scan"/></svg></div>
+      <div>
+        <h3>Photo taken</h3>
+        <p>We'll read the vendor, date and total, then add it to your tracker.</p>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn primary" id="scanUse">Read this receipt</button>
+      <button type="button" class="btn ghost" id="scanRetake">Retake</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------- Storage helpers ---------- */
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  var session = null;
+  try { session = JSON.parse(sessionStorage.getItem('dcm_session')); } catch (e) {}
+
+  /* ---------- Sample data ---------- */
+  var SEED_TX = [
+    { id: 's1', vendor: 'ABC Office Supplies', note: 'Office Equipment',  date: 'Oct 15, 2026', cat: 'Operational', amt: 12500, status: 'Cleared', source: 'sample' },
+    { id: 's2', vendor: 'Meralco',             note: 'Electricity',       date: 'Oct 12, 2026', cat: 'Utilities',   amt: 8200,  status: 'Cleared', source: 'sample' },
+    { id: 's3', vendor: 'XYZ Trading',         note: 'Consulting Services', date: 'Oct 10, 2026', cat: 'Misc/Other', amt: 50000, status: 'Flagged', source: 'sample' },
+    { id: 's4', vendor: 'Globe Business',      note: 'Internet & Mobile', date: 'Oct 8, 2026',  cat: 'Utilities',   amt: 3450,  status: 'Cleared', source: 'sample' },
+    { id: 's5', vendor: 'National Bookstore',  note: 'Stationery',        date: 'Oct 5, 2026',  cat: 'Operational', amt: 2980,  status: 'Cleared', source: 'sample' }
+  ];
+  var MONTHS = [
+    { m: 'Jul', v: 82000 }, { m: 'Aug', v: 91000 }, { m: 'Sep', v: 76000 }, { m: 'Oct', v: 100000 }
+  ];
+  var FLAG_REASON = 'The vendor\'s Tax Identification Number (TIN) appears in transactions for multiple clients, indicating a potential "Ghost Vendor." Your CPA has been notified to review this document.';
+
+  /* ---------- Live transaction list (saved in this browser) ---------- */
+  var TX = (function () {
+    var saved = store.get('dcm_tx', null);
+    return Array.isArray(saved) ? saved : SEED_TX.slice();
+  })();
+  function saveTx() { store.set('dcm_tx', TX); }
+  var CATS = ['Operational', 'Utilities', 'Misc/Other'];
+  var CAT_COLOR = { 'Operational': 'cyan', 'Utilities': 'warn', 'Misc/Other': 'danger' };
+
+  function peso(n) { return '₱' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function today() { return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  function nowStamp() { return new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+  function fmtSize(b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function isoToday() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function fmtISO(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return today();
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (isNaN(d.getTime())) return today();
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function pct(part, whole) { return whole > 0 ? Math.round(part / whole * 100) : 0; }
+  function catTotals() {
+    var map = {};
+    CATS.forEach(function (c) { map[c] = 0; });
+    TX.forEach(function (t) { map[t.cat] = (map[t.cat] || 0) + (Number(t.amt) || 0); });
+    return map;
+  }
+  function totalSpend() { return TX.reduce(function (s, t) { return s + (Number(t.amt) || 0); }, 0); }
+
+  /* ---------- Toast ---------- */
+  var toastEl = $('#toast'), toastTimer;
+  function toast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (type === 'error' ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.className = 'toast'; }, 3200);
+  }
+
+  /* ---------- User name / avatar ---------- */
+  function defaultName() {
+    var base = session && session.email ? session.email.split('@')[0] : 'Client';
+    var words = base.split(/[._\-+]+/).filter(Boolean).map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); });
+    return words.length ? words.join(' ') : 'Client';
+  }
+  function displayName() { return store.get('dcm_name', '') || defaultName(); }
+  function updateUser() {
+    var name = displayName();
+    $('#userName').textContent = 'Welcome, ' + name;
+    $('#userAvatar').textContent = name.split(' ').slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || 'C';
+  }
+
+  /* ---------- Transactions ---------- */
+  function rowHTML(t) {
+    var flag = t.status === 'Flagged';
+    var mine = t.source !== 'sample';
+    return '<tr class="filterable' + (flag ? ' flag-row' : '') + '" data-cat="' + esc(t.cat) + '">' +
+      '<td><div class="vendor-name' + (flag ? ' danger' : '') + '">' + esc(t.vendor) + (flag ? ' (Suspicious)' : '') + (t.source === 'scan' ? ' <span class="tag-scan">Scanned</span>' : '') + '</div>' +
+      '<div class="vendor-category">' + esc(t.note) + '</div></td>' +
+      '<td>' + esc(t.date) + '</td><td>' + esc(t.cat) + '</td>' +
+      '<td class="amount">' + peso(t.amt) + '</td>' +
+      '<td><span class="badge ' + (flag ? 'flagged' : 'verified') + '">' + esc(t.status) + '</span>' +
+      (mine ? ' <button type="button" class="icon-btn row-del" data-txdel="' + esc(t.id) + '" aria-label="Delete the ' + esc(t.vendor) + ' transaction" title="Delete this transaction"><svg class="ico"><use href="#i-x"/></svg></button>' : '') +
+      '</td></tr>';
+  }
+  function renderTx() {
+    $('#txRecent').innerHTML = TX.slice(0, 3).map(rowHTML).join('');
+    $('#txFull').innerHTML = TX.map(rowHTML).join('');
+    $('#txEmpty').textContent = TX.length ? 'Nothing fits these filters. Try loosening them.' : 'No transactions yet. Add one above and it will show up here.';
+    var flagged = TX.filter(function (t) { return t.status === 'Flagged'; });
+    $('#flaggedTotal').textContent = peso(flagged.reduce(function (s, t) { return s + (Number(t.amt) || 0); }, 0)).replace('.00', '');
+  }
+  function renderSpending() {
+    var map = catTotals(), total = totalSpend();
+    var used = CATS.filter(function (c) { return map[c] > 0; }).length;
+    var top = CATS.slice().sort(function (a, b) { return map[b] - map[a]; })[0];
+
+    $('#statTotal').textContent = peso(total);
+    $('#statTotalSub').textContent = total ? 'Across ' + used + ' ' + (used === 1 ? 'category' : 'categories') : 'Nothing recorded yet';
+    $('#statLargest').textContent = map[top] > 0 ? top : '—';
+    $('#statLargestSub').textContent = map[top] > 0 ? peso(map[top]) + ' · ' + pct(map[top], total) + '%' : 'Add a transaction to see this';
+
+    $('#catBars').innerHTML = CATS.map(function (c) {
+      return '<div class="bar-row"><div class="bar-top"><span>' + esc(c) + '</span><span><b>' + peso(map[c]) + '</b> · ' + pct(map[c], total) + '%</span></div>' +
+        '<div class="bar"><i class="' + CAT_COLOR[c] + '" style="width:' + pct(map[c], total) + '%"></i></div></div>';
+    }).join('');
+
+    // the current month and the dashboard donut follow the live list
+    MONTHS[MONTHS.length - 1].v = total;
+    renderChart();
+
+    var a = pct(map['Operational'], total), b = pct(map['Utilities'], total);
+    var donut = $('#spendDonut');
+    donut.style.background = total
+      ? 'conic-gradient(var(--cyan) 0 ' + a + '%, var(--warn) ' + a + '% ' + (a + b) + '%, var(--danger) ' + (a + b) + '% 100%)'
+      : 'conic-gradient(var(--line) 0 100%)';
+    donut.setAttribute('aria-label', 'Spending split: ' + a + '% operational, ' + b + '% utilities, ' + Math.max(0, 100 - a - b) + '% miscellaneous');
+    $('#donutTotal').textContent = total >= 1000 ? '₱' + (total / 1000).toFixed(total >= 10000 ? 0 : 1) + 'k' : peso(total);
+    $('#spendLegend').innerHTML = CATS.map(function (c) {
+      return '<div class="legend-row"><span class="name"><span class="dot ' + CAT_COLOR[c] + '"></span>' + esc(c) + '</span>' +
+        '<span><span class="amt">' + peso(map[c]) + '</span><span class="pct">' + pct(map[c], total) + '%</span></span></div>';
+    }).join('');
+  }
+  function renderAll() { renderTx(); renderSpending(); renderFlagged(); applyFilter(); }
+  function renderChart() {
+    var max = Math.max.apply(null, MONTHS.map(function (x) { return x.v; })) || 1;
+    $('#monthChart').innerHTML = MONTHS.map(function (x, i) {
+      return '<div class="col' + (i === MONTHS.length - 1 ? ' cur' : '') + '">' +
+        '<span class="v">₱' + Math.round(x.v / 1000) + 'k</span>' +
+        '<div class="b" style="height:' + Math.round(x.v / max * 150) + 'px"></div>' +
+        '<span class="m">' + x.m + '</span></div>';
+    }).join('');
+  }
+
+  /* ---------- Flagged ---------- */
+  function renderFlagged() {
+    var list = TX.filter(function (t) { return t.status === 'Flagged'; });
+    if (!list.length) {
+      $('#flagList').innerHTML = '<section class="card"><div class="empty">Nothing flagged. Your transactions all look normal.</div></section>';
+      return;
+    }
+    $('#flagList').innerHTML = list.map(function (t, i) {
+      return '<article class="card flag-card">' +
+        '<div class="flag-top"><div><h3>' + esc(t.vendor) + '</h3><span class="muted small">' + esc(t.note) + '</span></div>' +
+        '<span class="badge flagged">Flagged</span></div>' +
+        '<div class="flag-meta"><div>Amount<b>' + peso(t.amt) + '</b></div><div>Invoice date<b>' + esc(t.date) + '</b></div><div>Category<b>' + esc(t.cat) + '</b></div></div>' +
+        '<div class="alert" style="margin-top:0"><svg class="ico"><use href="#i-alert"/></svg><p><strong>Why it was flagged:</strong> ' + esc(FLAG_REASON) + '</p></div>' +
+        '<div class="btn-row"><button type="button" class="btn inline sm" data-ask="' + i + '"><svg class="ico"><use href="#i-message"/></svg>Message my CPA</button>' +
+        '<button type="button" class="btn inline sm ghost" data-go="upload"><svg class="ico"><use href="#i-upload"/></svg>Upload supporting document</button></div>' +
+        '</article>';
+    }).join('');
+  }
+
+  /* ---------- Reports (real CSV downloads) ---------- */
+  function csv(rows) {
+    return rows.map(function (r) {
+      return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\r\n');
+  }
+  function download(filename, rows) {
+    var blob = new Blob(['﻿' + csv(rows)], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+  }
+  var REPORTS = {
+    transactions: function () {
+      return ['dcm-transactions-oct-2026.csv',
+        [['Vendor', 'Description', 'Invoice Date', 'Category', 'Amount (PHP)', 'Status']].concat(
+          TX.map(function (t) { return [t.vendor, t.note, t.date, t.cat, t.amt.toFixed(2), t.status]; }))];
+    },
+    spending: function () {
+      var map = catTotals(), total = totalSpend();
+      return ['dcm-spending-summary-oct-2026.csv',
+        [['Category', 'Amount (PHP)', 'Share']].concat(
+          CATS.map(function (c) { return [c, map[c].toFixed(2), pct(map[c], total) + '%']; }),
+          [['Total', total.toFixed(2), '100%']])];
+    },
+    fraud: function () {
+      return ['dcm-fraud-anomaly-report-oct-2026.csv',
+        [['Vendor', 'Invoice Date', 'Amount (PHP)', 'Reason']].concat(
+          TX.filter(function (t) { return t.status === 'Flagged'; })
+            .map(function (t) { return [t.vendor, t.date, t.amt.toFixed(2), FLAG_REASON]; }))];
+    }
+  };
+
+  /* ---------- Upload ---------- */
+  var queue = [];
+  var MAX_SIZE = 10 * 1048576;
+  var OK_EXT = /\.(pdf|jpe?g|png)$/i;
+  var dz = $('#dropzone'), fileInput = $('#fileInput');
+
+  function addFiles(fileList) {
+    var problems = [];
+    Array.prototype.forEach.call(fileList, function (f) {
+      if (!OK_EXT.test(f.name)) { problems.push('\u201c' + f.name + '\u201d isn\u2019t a PDF, JPG or PNG.'); return; }
+      if (f.size > MAX_SIZE) { problems.push('\u201c' + f.name + '\u201d is over the 10 MB limit.'); return; }
+      var dup = queue.some(function (q) { return q.name === f.name && q.size === f.size; });
+      if (!dup) queue.push({ name: f.name, size: f.size });
+    });
+    showUploadErrors(problems);
+    renderQueue();
+  }
+  function showUploadErrors(list) {
+    var el = $('#uploadErr');
+    if (!list.length) { el.hidden = true; el.innerHTML = ''; dz.classList.remove('invalid'); return; }
+    el.innerHTML = '<strong>' + (list.length === 1 ? 'We couldn\u2019t add 1 file:' : 'We couldn\u2019t add ' + list.length + ' files:') + '</strong><ul>' + list.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+    el.hidden = false; dz.classList.add('invalid');
+  }
+  function renderQueue() {
+    $('#queue').innerHTML = queue.map(function (f, i) {
+      return '<div class="file"><svg class="ico"><use href="#i-file"/></svg><span class="name">' + esc(f.name) + '</span>' +
+        '<span class="size">' + fmtSize(f.size) + '</span>' +
+        '<button type="button" class="icon-btn" data-remove="' + i + '" aria-label="Remove ' + esc(f.name) + '"><svg class="ico"><use href="#i-x"/></svg></button></div>';
+    }).join('');
+    $('#submitFiles').disabled = $('#clearFiles').disabled = !queue.length;
+  }
+  function renderUploads() {
+    var rows = store.get('dcm_uploads', []);
+    $('#uploadsBody').innerHTML = rows.map(function (r) {
+      return '<tr class="filterable"><td><div class="vendor-name">' + esc(r.name) + '</div></td><td>' + esc(r.type) + '</td><td>' + esc(r.size) +
+        '</td><td>' + esc(r.date) + '</td><td><span class="badge pending">Pending review</span></td></tr>';
+    }).join('');
+  }
+
+  dz.addEventListener('click', function () { fileInput.click(); });
+  dz.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+  fileInput.addEventListener('change', function () { addFiles(fileInput.files); fileInput.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('drag'); });
+  });
+  dz.addEventListener('drop', function (e) { if (e.dataTransfer) addFiles(e.dataTransfer.files); });
+
+  $('#clearFiles').addEventListener('click', function () { queue = []; renderQueue(); });
+  $('#submitFiles').addEventListener('click', function () {
+    if (!queue.length) return;
+    var type = $('#docType').value, date = today();
+    var rows = store.get('dcm_uploads', []);
+    queue.slice().reverse().forEach(function (f) {
+      rows.unshift({ name: f.name, type: type, size: fmtSize(f.size), date: date });
+    });
+    store.set('dcm_uploads', rows);
+    var n = queue.length;
+    queue = [];
+    renderQueue(); renderUploads(); applyFilter();
+    toast('Sent. Your CPA team will review ' + (n > 1 ? 'these ' + n + ' documents' : 'your document') + '.');
+  });
+
+  /* ---------- Add transaction (manual form + receipt OCR) ---------- */
+  var txForm = $('#txForm'), txVendor = $('#txVendor'), txAmount = $('#txAmount'),
+      txDate = $('#txDate'), txCat = $('#txCat'), txNote = $('#txNote');
+
+  function fieldError(input, msg) {
+    var f = input.closest('.field');
+    if (!f) return;
+    var el = f.querySelector('.field-error');
+    if (msg) {
+      if (!el) { el = document.createElement('div'); el.className = 'field-error'; el.setAttribute('role', 'alert'); f.appendChild(el); }
+      el.textContent = msg;
+      input.setAttribute('aria-invalid', 'true');
+      f.classList.add('invalid');
+    } else {
+      if (el) el.remove();
+      input.removeAttribute('aria-invalid');
+      f.classList.remove('invalid');
+    }
+  }
+
+  function addTx(data) {
+    var t = {
+      id: 'tx' + Date.now() + Math.random().toString(36).slice(2, 6),
+      vendor: data.vendor,
+      note: data.note || '',
+      date: data.date,
+      cat: data.cat,
+      amt: Math.round(data.amt * 100) / 100,
+      status: 'Cleared',
+      source: data.source || 'manual'
+    };
+    TX.unshift(t);
+    saveTx();
+    renderAll();
+    return t;
+  }
+
+  function resetTxForm() {
+    txForm.reset();
+    txDate.value = isoToday();
+    [txVendor, txAmount, txDate].forEach(function (i) { fieldError(i, ''); });
+  }
+
+  function setTab(scan) {
+    $('#tabManual').setAttribute('aria-selected', scan ? 'false' : 'true');
+    $('#tabScan').setAttribute('aria-selected', scan ? 'true' : 'false');
+    $('#panelManual').hidden = !!scan;
+    $('#panelScan').hidden = !scan;
+  }
+
+  txForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = true;
+    if (!txVendor.value.trim()) { fieldError(txVendor, 'Enter the vendor or store name.'); ok = false; } else fieldError(txVendor, '');
+    var amt = parseFloat(String(txAmount.value).replace(/,/g, ''));
+    if (!txAmount.value.trim() || isNaN(amt) || amt <= 0) { fieldError(txAmount, 'Enter an amount greater than zero.'); ok = false; } else fieldError(txAmount, '');
+    if (!txDate.value) { fieldError(txDate, 'Pick the invoice date.'); ok = false; } else fieldError(txDate, '');
+    if (!ok) { var bad = txForm.querySelector('[aria-invalid="true"]'); if (bad) bad.focus(); return; }
+    var t = addTx({ vendor: txVendor.value.trim(), note: txNote.value.trim(), date: fmtISO(txDate.value), cat: txCat.value, amt: amt });
+    resetTxForm();
+    toast(t.vendor + ' was added to your spending tracker.');
+  });
+
+  $('#txReset').addEventListener('click', resetTxForm);
+  $('#tabManual').addEventListener('click', function () { setTab(false); });
+  $('#tabScan').addEventListener('click', function () { setTab(true); });
+
+  /* ---------- Receipt OCR (Tesseract.js, loaded on first use) ---------- */
+  var OCR_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  var ocrLoader = null, ocrBusy = false;
+  var receiptZone = $('#receiptZone'), receiptInput = $('#receiptInput');
+
+  function loadOCR() {
+    if (window.Tesseract) return Promise.resolve();
+    if (ocrLoader) return ocrLoader;
+    ocrLoader = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = OCR_SRC;
+      s.async = true;
+      s.onload = function () { if (window.Tesseract) resolve(); else reject(new Error('unavailable')); };
+      s.onerror = function () { ocrLoader = null; reject(new Error('offline')); };
+      document.head.appendChild(s);
+    });
+    return ocrLoader;
+  }
+
+  function setStatus(msg) {
+    var el = $('#ocrStatus');
+    if (!msg) { el.hidden = true; el.textContent = ''; return; }
+    el.hidden = false;
+    el.textContent = msg;
+  }
+
+  function receiptErr(msg) {
+    var el = $('#receiptErr');
+    if (!msg) { el.hidden = true; el.innerHTML = ''; receiptZone.classList.remove('invalid'); return; }
+    el.hidden = false;
+    el.innerHTML = '<strong>' + esc(msg) + '</strong>';
+    receiptZone.classList.add('invalid');
+  }
+
+  function pickReceipt(file) {
+    if (!file || ocrBusy) return;
+    receiptErr('');
+    if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|bmp)$/i.test(file.name)) {
+      receiptErr('That file isn\u2019t a photo. Use a JPG or PNG image of the receipt.');
+      return;
+    }
+    if (file.size > MAX_SIZE) { receiptErr('That photo is over the 10 MB limit. Try a smaller one.'); return; }
+    var reader = new FileReader();
+    reader.onload = function () { runOCR(String(reader.result)); };
+    reader.onerror = function () { receiptErr('We couldn\u2019t open that file. Try another photo.'); };
+    reader.readAsDataURL(file);
+  }
+
+  function runOCR(dataUrl) {
+    ocrBusy = true;
+    $('#ocrResult').hidden = true;
+    setStatus('Loading the receipt reader\u2026');
+    loadOCR().then(function () {
+      setStatus('Reading the receipt\u2026');
+      return window.Tesseract.recognize(dataUrl, 'eng', {
+        logger: function (m) {
+          if (m.status === 'recognizing text') setStatus('Reading the receipt\u2026 ' + Math.round((m.progress || 0) * 100) + '%');
+        }
+      });
+    }).then(function (res) {
+      handleScan((res && res.data && res.data.text) || '', dataUrl);
+    }).catch(function () {
+      setStatus('');
+      receiptErr(window.Tesseract
+        ? 'We couldn\u2019t read that photo. Try a sharper, straight-on shot, or add the transaction manually.'
+        : 'The receipt reader needs an internet connection the first time. Add the transaction manually, or try again online.');
+    }).then(function () {
+      ocrBusy = false;
+    });
+  }
+
+  function handleScan(text, dataUrl) {
+    var read = parseReceipt(text);
+    setStatus('');
+    if (read.amount > 0) {
+      var t = addTx({
+        vendor: read.vendor || 'Scanned receipt',
+        note: 'Added from a scanned receipt',
+        date: fmtISO(read.date),
+        cat: read.cat,
+        amt: read.amount,
+        source: 'scan'
+      });
+      var el = $('#ocrResult');
+      el.innerHTML = '<div class="ocr-thumb"><img src="' + dataUrl + '" alt="The receipt you scanned"></div>' +
+        '<div class="ocr-read"><strong><svg class="ico"><use href="#i-check"/></svg>Added to your spending tracker</strong>' +
+        '<span>' + esc(t.vendor) + ' \u00b7 ' + esc(t.date) + ' \u00b7 ' + esc(t.cat) + '</span>' +
+        '<span class="ocr-amt">' + peso(t.amt) + '</span>' +
+        '<div class="btn-row"><button type="button" class="btn inline sm ghost" data-txdel="' + esc(t.id) + '">Remove this entry</button>' +
+        '<button type="button" class="btn inline sm" data-scan-again>Scan another receipt</button></div></div>';
+      el.hidden = false;
+      toast('Scanned ' + peso(t.amt) + ' from ' + t.vendor + ' and added it to your tracker.');
+    } else {
+      setTab(false);
+      txVendor.value = read.vendor || '';
+      txDate.value = read.date || isoToday();
+      if (read.cat) txCat.value = read.cat;
+      txAmount.value = '';
+      fieldError(txAmount, 'We couldn\u2019t find the total on that receipt. Type it here.');
+      txAmount.focus();
+      toast('We couldn\u2019t find the total on that receipt. Check the details and add the amount.', 'error');
+    }
+  }
+
+  receiptZone.addEventListener('click', function () { receiptInput.click(); });
+  receiptZone.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); receiptInput.click(); }
+  });
+  receiptInput.addEventListener('change', function () { pickReceipt(receiptInput.files[0]); receiptInput.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    receiptZone.addEventListener(ev, function (e) { e.preventDefault(); receiptZone.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    receiptZone.addEventListener(ev, function (e) { e.preventDefault(); receiptZone.classList.remove('drag'); });
+  });
+  receiptZone.addEventListener('drop', function (e) { if (e.dataTransfer) pickReceipt(e.dataTransfer.files[0]); });
+
+  /* ---------- Receipt camera (same flow as the staff side) ---------- */
+  var scanner = $('#scanner'), scanVideo = $('#scanVideo'), scanMsg = $('#scanMsg'), scanSheet = $('#scanSheet');
+  var camStream = null, facing = 'environment', torchOn = false, shotUrl = '', camOpener = null;
+
+  function stopCam() {
+    if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+    scanVideo.srcObject = null; scanVideo.hidden = true;
+  }
+
+  function camFail(text) { stopCam(); scanMsg.textContent = text; scanMsg.hidden = false; }
+
+  function setTorch(on) {
+    try {
+      var t = camStream && camStream.getVideoTracks()[0];
+      if (t && t.applyConstraints) t.applyConstraints({ advanced: [{ torch: on }] }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function startCam() {
+    stopCam(); scanMsg.hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      camFail('This browser can\u2019t open the camera here. Use the photo button below instead.');
+      return;
+    }
+    if (!window.isSecureContext) {
+      camFail('The camera needs the page opened over http:// or https://. Use the photo button below instead.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1920 } }, audio: false }).then(function (stream) {
+      if (scanner.hidden) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      camStream = stream; scanVideo.srcObject = stream; scanVideo.hidden = false;
+      var p = scanVideo.play(); if (p && p.catch) p.catch(function () {});
+      if (torchOn) setTorch(true);
+    }).catch(function (err) {
+      camFail(err && err.name === 'NotAllowedError'
+        ? 'Camera access was blocked. Allow it in your browser settings, or use the photo button below.'
+        : 'No camera found. Use the photo button below to choose a receipt picture.');
+    });
+  }
+
+  function openScanner() {
+    if (ocrBusy) { toast('Hold on \u2014 we\u2019re still reading the last receipt.'); return; }
+    setTab(true);
+    camOpener = document.activeElement;
+    scanSheet.hidden = true; scanMsg.hidden = true;
+    scanner.hidden = false;
+    document.documentElement.classList.add('scan-open');
+    $('#scanClose').focus();
+    startCam();
+  }
+
+  function closeScanner() {
+    if (scanner.hidden) return;
+    scanner.hidden = true; scanSheet.hidden = true;
+    document.documentElement.classList.remove('scan-open');
+    stopCam(); torchOn = false;
+    $('#scanFlash').setAttribute('aria-pressed', 'false'); $('#scanFlash').classList.remove('on');
+    var back = camOpener && document.contains(camOpener) ? camOpener : $('#tabScan');
+    try { back.focus(); } catch (e) {}
+  }
+
+  function showShot(url) {
+    shotUrl = url;
+    var th = $('#scanThumb');
+    th.style.backgroundImage = url ? 'url("' + url + '")' : '';
+    th.classList.toggle('has-img', !!url);
+    scanSheet.hidden = false;
+    try { scanVideo.pause(); } catch (e) {}
+    $('#scanUse').focus();
+  }
+
+  function shoot() {
+    var fx = $('#scanFx'); fx.classList.remove('go'); void fx.offsetWidth; fx.classList.add('go');
+    var url = '';
+    if (camStream && scanVideo.videoWidth) {
+      var w = Math.min(1600, scanVideo.videoWidth), h = Math.round(w * scanVideo.videoHeight / scanVideo.videoWidth);
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      try { c.getContext('2d').drawImage(scanVideo, 0, 0, w, h); url = c.toDataURL('image/jpeg', 0.85); } catch (e) {}
+    }
+    setTimeout(function () {
+      if (!url) { camFail('We couldn\u2019t capture that photo. Try again, or use the photo button below.'); return; }
+      showShot(url);
+    }, 180);
+  }
+
+  document.addEventListener('click', function (e) { if (e.target.closest('[data-scan-open]')) openScanner(); });
+  $('#scanClose').addEventListener('click', closeScanner);
+  $('#scanFlash').addEventListener('click', function () {
+    torchOn = !torchOn;
+    this.setAttribute('aria-pressed', torchOn); this.classList.toggle('on', torchOn);
+    setTorch(torchOn);
+  });
+  $('#scanFlip').addEventListener('click', function () {
+    facing = facing === 'environment' ? 'user' : 'environment';
+    shotUrl = ''; scanSheet.hidden = true;
+    startCam();
+  });
+  $('#scanGallery').addEventListener('click', function () { $('#scanFile').click(); });
+  $('#scanFile').addEventListener('change', function () {
+    var f = this.files[0]; this.value = '';
+    if (!f) return;
+    closeScanner();
+    pickReceipt(f);
+  });
+  $('#scanShutter').addEventListener('click', shoot);
+  $('#scanRetake').addEventListener('click', function () {
+    scanSheet.hidden = true; shotUrl = '';
+    try { var p = scanVideo.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    $('#scanShutter').focus();
+  });
+  $('#scanUse').addEventListener('click', function () {
+    if (!shotUrl) { $('#scanShutter').focus(); return; }
+    var url = shotUrl;
+    closeScanner();
+    runOCR(url);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !scanner.hidden) closeScanner(); });
+
+  /* ---------- Reading a receipt ---------- */
+  var MONTH_NUM = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+
+  function isoOf(y, m, d) {
+    var dt = new Date(y, m - 1, d);
+    if (isNaN(dt.getTime()) || dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+    return y + '-' + pad2(m) + '-' + pad2(d);
+  }
+
+  function findDate(text) {
+    var s = String(text || ''), m;
+    m = s.match(/\b(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\b/);
+    if (m) return isoOf(+m[1], +m[2], +m[3]);
+    m = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/i);
+    if (m) return isoOf(+m[3], MONTH_NUM[m[1].toLowerCase()], +m[2]);
+    m = s.match(/\b(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+(\d{4})/i);
+    if (m) return isoOf(+m[3], MONTH_NUM[m[2].toLowerCase()], +m[1]);
+    m = s.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4}|\d{2})\b/);
+    if (m) {
+      var a = +m[1], b = +m[2], y = +m[3];
+      if (y < 100) y += 2000;
+      return a > 12 && b <= 12 ? isoOf(y, b, a) : isoOf(y, a, b);
+    }
+    return '';
+  }
+
+  function moneyOnLine(line) {
+    var m = line.match(/(?:grand\s*total|total\s*due|amount\s*due|total\s*amount|total)[^\d]{0,12}((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)/i);
+    return m ? parseFloat(m[1].replace(/,/g, '')) : 0;
+  }
+
+  function findAmount(text) {
+    var bare = String(text || '').replace(/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/g, ' ').replace(/\d{1,2}:\d{2}(:\d{2})?/g, ' ');
+    var lines = bare.split(/\r?\n/).map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+
+    var best = 0;
+    lines.forEach(function (l) {
+      if (!/(total|amount\s*due)/i.test(l) || /sub\s*-?\s*total/i.test(l)) return;
+      var direct = moneyOnLine(l);
+      if (direct >= 1 && direct <= 1e7) { best = Math.max(best, direct); return; }
+      var nums = l.match(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g) || [];
+      nums.forEach(function (raw) {
+        var n = parseFloat(raw.replace(/,/g, ''));
+        if (!isNaN(n) && n >= 1 && n <= 1e7) best = Math.max(best, n);
+      });
+    });
+    if (best) return best;
+
+    var decimals = bare.match(/(?:\d{1,3}(?:,\d{3})+|\d+)\.\d{2}\b/g) || [];
+    var cands = decimals.map(function (r) { return parseFloat(r.replace(/,/g, '')); })
+      .filter(function (n) { return n >= 1 && n <= 1e7; });
+    return cands.length ? Math.max.apply(null, cands) : 0;
+  }
+
+  function findVendor(text) {
+    var skip = /(receipt|invoice|official|sales|thank|welcome|cash|change|vat|tin\b|address|tel|phone|date|time|cashier|or\s*no|invoice\s*no|#\d)/i;
+    var lines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(Boolean).slice(0, 8);
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i].replace(/^[^A-Za-z]+/, '').trim();
+      if (l.length < 3 || l.length > 48) continue;
+      if (!/[A-Za-z]{3,}/.test(l)) continue;
+      if (skip.test(l)) continue;
+      if (/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(l)) continue;
+      return l;
+    }
+    return '';
+  }
+
+  function guessCat(text) {
+    var s = String(text || '').toLowerCase();
+    if (/(meralco|electric|kuryente|water|maynilad|internet|globe|pldt|converge|smart|mobile|phone|utilit|bill|gas)/.test(s)) return 'Utilities';
+    if (/(office|supplies|stationery|paper|ink|toner|printer|computer|equipment|rent|salary|wage|delivery|transport|fuel|gasoline|repair|maintenance|professional|service)/.test(s)) return 'Operational';
+    return 'Misc/Other';
+  }
+
+  function parseReceipt(text) {
+    return { vendor: findVendor(text), amount: findAmount(text), date: findDate(text), cat: guessCat(text) };
+  }
+
+  /* ---------- Messages ---------- */
+  var SEED = [{ from: 'them', time: 'Oct 30, 9:12 AM', text: 'Hello! We flagged a transaction with XYZ Trading for review. Could you send us the supporting invoice and a short description of the service?' }];
+  function getMsgs() { return store.get('dcm_msgs', SEED); }
+  function renderMsgs() {
+    var body = $('#chatBody');
+    body.innerHTML = getMsgs().map(function (m, i) {
+      var del = m.from === 'me'
+        ? '<button type="button" class="msg-del" data-del="' + i + '" aria-label="Delete this message"><svg class="ico"><use href="#i-x"/></svg></button>'
+        : '';
+      return '<div class="msg ' + m.from + '">' + del + esc(m.text) + '<small>' + esc(m.time) + '</small></div>';
+    }).join('');
+    $('#clearMsgs').hidden = !getMsgs().some(function (m) { return m.from === 'me'; });
+    body.scrollTop = body.scrollHeight;
+  }
+  $('#chatForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = $('#chatInput'), text = input.value.trim();
+    if (!text) return;
+    var msgs = getMsgs();
+    msgs.push({ from: 'me', time: nowStamp(), text: text });
+    store.set('dcm_msgs', msgs);
+    input.value = '';
+    renderMsgs();
+  });
+
+  /* ---------- Settings ---------- */
+  function loadSettings() {
+    var prefs = store.get('dcm_prefs', { flag: true, docs: true, weekly: false });
+    $('#setName').value = displayName();
+    $('#setEmail').value = (session && session.email) || '';
+    $('#prefFlag').checked = !!prefs.flag;
+    $('#prefDocs').checked = !!prefs.docs;
+    $('#prefWeekly').checked = !!prefs.weekly;
+  }
+  function setNameErr(msg) {
+    var inp = $('#setName'), f = inp.closest('.field'), el = f.querySelector('.field-error');
+    if (msg) {
+      if (!el) { el = document.createElement('div'); el.className = 'field-error'; el.id = 'setNameErr'; el.setAttribute('role', 'alert'); f.appendChild(el); }
+      el.textContent = msg; inp.setAttribute('aria-invalid', 'true'); inp.setAttribute('aria-describedby', 'setNameErr'); f.classList.add('invalid');
+    } else { if (el) el.remove(); inp.removeAttribute('aria-invalid'); inp.removeAttribute('aria-describedby'); f.classList.remove('invalid'); }
+  }
+  $('#setName').addEventListener('input', function () { if (this.getAttribute('aria-invalid') && this.value.trim()) setNameErr(''); });
+  $('#settingsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = $('#setName').value.trim();
+    if (!name) { setNameErr('Enter the name you\u2019d like us to use.'); $('#setName').focus(); return; }
+    setNameErr('');
+    store.set('dcm_name', name);
+    store.set('dcm_prefs', { flag: $('#prefFlag').checked, docs: $('#prefDocs').checked, weekly: $('#prefWeekly').checked });
+    updateUser();
+    toast('Your settings are saved.');
+  });
+
+  /* ---------- Search + category filter ---------- */
+  var searchInput = $('#searchInput'), catFilter = $('#catFilter');
+  function applyFilter() {
+    var q = searchInput.value.trim().toLowerCase();
+    var cat = catFilter.value;
+    $$('tr.filterable').forEach(function (tr) {
+      var okQ = !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
+      var okC = !tr.closest('#txFull') || cat === 'all' || tr.dataset.cat === cat;
+      tr.hidden = !(okQ && okC);
+    });
+    $$('.table-wrap').forEach(function (w) {
+      var empty = w.nextElementSibling;
+      if (empty && empty.classList.contains('empty')) {
+        empty.hidden = $$('tbody tr:not([hidden])', w).length > 0;
+      }
+    });
+  }
+  searchInput.addEventListener('input', applyFilter);
+  catFilter.addEventListener('change', applyFilter);
+
+  /* ---------- Router ---------- */
+  var TITLES = { dashboard: 'Dashboard', upload: 'Upload Documents', spending: 'Spending Tracker', flagged: 'Flagged Transactions', reports: 'Financial Reports', messages: 'Messages', settings: 'Settings' };
+  var app = $('#app');
+  var current = null;
+
+  function show(name) {
+    if (!TITLES[name]) name = 'dashboard';
+    $$('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + name; });
+    $$('[data-view]').forEach(function (a) {
+      var on = a.dataset.view === name;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    document.title = TITLES[name] + ' | DCM & Co.';
+    if (current !== null && current !== name) { searchInput.value = ''; catFilter.value = 'all'; applyFilter(); window.scrollTo(0, 0); }
+    current = name;
+    app.classList.remove('menu-open');
+    if (name === 'messages') renderMsgs();
+  }
+  function route() { show(location.hash.replace('#', '')); }
+  function go(name) { if (location.hash === '#' + name) show(name); else location.hash = name; }
+
+  window.addEventListener('hashchange', route);
+
+  /* ---------- Click handling ---------- */
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-go]'))) { go(t.dataset.go); return; }
+    if (e.target.closest('[data-scan-again]')) {
+      $('#ocrResult').hidden = true;
+      openScanner();
+      return;
+    }
+    if ((t = e.target.closest('[data-txdel]'))) {
+      var id = t.dataset.txdel;
+      var row = TX.filter(function (x) { return String(x.id) === id; })[0];
+      if (!row) return;
+      if (!confirm('Delete the ' + row.vendor + ' transaction (' + peso(row.amt) + ')?')) return;
+      TX = TX.filter(function (x) { return String(x.id) !== id; });
+      saveTx();
+      $('#ocrResult').hidden = true;
+      renderAll();
+      toast('Transaction deleted.');
+      return;
+    }
+    if ((t = e.target.closest('[data-del]'))) {
+      var all = getMsgs();
+      all.splice(+t.dataset.del, 1);
+      store.set('dcm_msgs', all);
+      renderMsgs();
+      toast('Message deleted.');
+      return;
+    }
+    if (e.target.closest('#clearMsgs')) {
+      if (confirm('Delete all of your messages in this chat?')) {
+        store.set('dcm_msgs', getMsgs().filter(function (m) { return m.from !== 'me'; }));
+        renderMsgs();
+        toast('Your messages were cleared.');
+      }
+      return;
+    }
+    if ((t = e.target.closest('[data-remove]'))) { queue.splice(+t.dataset.remove, 1); renderQueue(); return; }
+    if ((t = e.target.closest('[data-report]'))) {
+      var r = REPORTS[t.dataset.report]();
+      download(r[0], r[1]);
+      toast('Downloaded ' + r[0]);
+      return;
+    }
+    if ((t = e.target.closest('[data-ask]'))) {
+      var tx = TX.filter(function (x) { return x.status === 'Flagged'; })[+t.dataset.ask];
+      go('messages');
+      var input = $('#chatInput');
+      input.value = 'Hi, I\'d like to follow up on the flagged transaction with ' + tx.vendor + ' (' + peso(tx.amt) + ', ' + tx.date + '). ';
+      input.focus();
+    }
+  });
+
+  /* ---------- Mobile menu + logout ---------- */
+  $('#menuBtn').addEventListener('click', function () { app.classList.add('menu-open'); });
+  $('#scrim').addEventListener('click', function () { app.classList.remove('menu-open'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') app.classList.remove('menu-open'); });
+  $('#logoutLink').addEventListener('click', function () {
+    try { sessionStorage.removeItem('dcm_session'); } catch (e) {}
+  });
+
+  /* ---------- Init ---------- */
+  txDate.value = isoToday();
+  renderAll(); renderQueue(); renderUploads(); renderMsgs();
+  loadSettings(); updateUser();
+  route();
+})();
+</script>
+<script>
+(function(){
+  var out={};
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+  window.onerror=function(m){out.pageError=String(m);};
+  (async function(){
+    try{
+      localStorage.clear();
+      var btn=document.querySelector('[data-scan-open]');
+      out.btnExists=!!btn;
+      btn.click();
+      out.openImmediately=!document.getElementById('scanner').hidden;
+      var vid=document.getElementById('scanVideo');
+      for(var i=0;i<80 && !vid.videoWidth;i++) await sleep(100);
+      out.videoWidth=vid.videoWidth;
+      out.msg=document.getElementById('scanMsg').hidden?'(hidden)':document.getElementById('scanMsg').textContent;
+      out.streamLive=!!(vid.srcObject && vid.srcObject.active);
+      document.getElementById('scanShutter').click();
+      await sleep(400);
+      out.sheetOpen=!document.getElementById('scanSheet').hidden;
+      out.thumbSet=document.getElementById('scanThumb').style.backgroundImage.indexOf('data:image/jpeg')>-1;
+      document.getElementById('scanUse').click();
+      out.closedAfterUse=document.getElementById('scanner').hidden;
+      out.streamStopped=document.getElementById('scanVideo').srcObject===null;
+      for(var j=0;j<80 && document.getElementById('ocrResult').hidden;j++) await sleep(100);
+      await sleep(300);
+      out.resultShown=!document.getElementById('ocrResult').hidden;
+      out.vendorVal=document.getElementById('txVendor').value;
+      out.manualSel=document.getElementById('tabManual').getAttribute('aria-selected');
+      out.errBox=document.getElementById('receiptErr').textContent;
+      out.statusBox=document.getElementById('ocrStatus').textContent;
+      out.resultText=document.getElementById('ocrResult').textContent.split(/\s+/).join(' ').slice(0,90);
+      out.total=document.getElementById('statTotal').textContent;
+      out.rows=document.querySelectorAll('#txFull tr').length;
+      var s=JSON.parse(localStorage.getItem('dcm_tx')||'null');
+      out.stored=s?s.length:0;
+      out.againBtn=!!document.querySelector('#ocrResult [data-scan-again]');
+      out.focusAfterClose=document.activeElement && (document.activeElement.id||document.activeElement.className);
+      out.bodyOverflow=document.documentElement.classList.contains('scan-open');
+    }catch(e){out.error=e.message;}
+    window.__done=JSON.stringify(out);
+  })();
+})();
+</script>
+</body>
+</html>

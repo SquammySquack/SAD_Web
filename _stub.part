@@ -1,0 +1,5 @@
+<script>
+window.Tesseract = { recognize: function () {
+  return Promise.resolve({ data: { text: 'JOLLIBEE FOODS\nTOTAL 262.08\n11/04/2026' } });
+} };
+</script>

@@ -822,3 +822,24 @@ html[data-theme="dark"] .pv-box iframe { background:#fff; }
 html[data-theme="dark"] .crumb.cur { color:var(--d-text, #E7EEF4); }
 html[data-theme="dark"] .fcard, html[data-theme="dark"] .seg, html[data-theme="dark"] .seg button { background:transparent; }
 html[data-theme="dark"] .frow:not(.head):hover { background:rgba(69,208,243,.08); }
+
+/* =====================================================================
+   Clear, friendly forms: inline errors, calmer spacing
+   ===================================================================== */
+.field { margin-bottom:22px; }
+.field-error { margin-top:7px; font-size:13.5px; line-height:1.45; color:var(--danger); font-weight:500; }
+.field.invalid .input, .field.invalid .select, .input[aria-invalid="true"], .select[aria-invalid="true"] { border-color:var(--danger); }
+.field.invalid label { color:var(--ink); }
+.dropzone.invalid { border-color:var(--danger); }
+.field-error.block { margin:14px 0 0; padding:12px 14px; border:1px solid var(--danger); border-radius:10px; background:rgba(229,72,77,.06); }
+.field-error.block ul { margin:6px 0 0 18px; font-weight:400; }
+.field-error.block[hidden] { display:none; }
+.page-head { margin-bottom:34px; }
+.page-head p { max-width:62ch; line-height:1.55; }
+.card-head { margin-bottom:20px; }
+.btn-row { margin-top:26px; gap:12px; }
+.empty { line-height:1.6; padding:36px 20px; }
+.content > .view > section + section, .content .grid-top + section { margin-top:32px; }
+
+/* tables sit flush now that cards have no side padding */
+.content .card .table-wrap{ margin-left:0; margin-right:0; padding-left:0; padding-right:0; }

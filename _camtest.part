@@ -1,0 +1,44 @@
+<script>
+(function(){
+  var out={};
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+  window.onerror=function(m){out.pageError=String(m);};
+  (async function(){
+    try{
+      localStorage.clear();
+      var btn=document.querySelector('[data-scan-open]');
+      out.btnExists=!!btn;
+      btn.click();
+      out.openImmediately=!document.getElementById('scanner').hidden;
+      var vid=document.getElementById('scanVideo');
+      for(var i=0;i<80 && !vid.videoWidth;i++) await sleep(100);
+      out.videoWidth=vid.videoWidth;
+      out.msg=document.getElementById('scanMsg').hidden?'(hidden)':document.getElementById('scanMsg').textContent;
+      out.streamLive=!!(vid.srcObject && vid.srcObject.active);
+      document.getElementById('scanShutter').click();
+      await sleep(400);
+      out.sheetOpen=!document.getElementById('scanSheet').hidden;
+      out.thumbSet=document.getElementById('scanThumb').style.backgroundImage.indexOf('data:image/jpeg')>-1;
+      document.getElementById('scanUse').click();
+      out.closedAfterUse=document.getElementById('scanner').hidden;
+      out.streamStopped=document.getElementById('scanVideo').srcObject===null;
+      for(var j=0;j<80 && document.getElementById('ocrResult').hidden;j++) await sleep(100);
+      await sleep(300);
+      out.resultShown=!document.getElementById('ocrResult').hidden;
+      out.vendorVal=document.getElementById('txVendor').value;
+      out.manualSel=document.getElementById('tabManual').getAttribute('aria-selected');
+      out.errBox=document.getElementById('receiptErr').textContent;
+      out.statusBox=document.getElementById('ocrStatus').textContent;
+      out.resultText=document.getElementById('ocrResult').textContent.split(/\s+/).join(' ').slice(0,90);
+      out.total=document.getElementById('statTotal').textContent;
+      out.rows=document.querySelectorAll('#txFull tr').length;
+      var s=JSON.parse(localStorage.getItem('dcm_tx')||'null');
+      out.stored=s?s.length:0;
+      out.againBtn=!!document.querySelector('#ocrResult [data-scan-again]');
+      out.focusAfterClose=document.activeElement && (document.activeElement.id||document.activeElement.className);
+      out.bodyOverflow=document.documentElement.classList.contains('scan-open');
+    }catch(e){out.error=e.message;}
+    window.__done=JSON.stringify(out);
+  })();
+})();
+</script>
