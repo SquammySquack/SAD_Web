@@ -201,121 +201,91 @@ html[data-theme="dark"] .status.error { background:rgba(229,72,77,.14); color:#F
 }
 
 /* =====================================================================
-   DCM & Co. — Minimal design layer
-   Loaded AFTER each page's own stylesheet. Same content, same cyan/ink
-   colors; flatter surfaces, hairline borders, no shadows or gradients.
+   DCM & Co. — Professional interface layer
+   Applied last so the login screen matches the site and both portals:
+   white surfaces, hairline borders, a single accent colour.
    ===================================================================== */
-:root{ --radius:10px; --shadow-sm:none; --shadow-md:none; --shadow-lg:none; }
+:root{
+  --radius:8px;
+  --line:#E1E7ED;
+  --line-strong:#CBD6E0;
+  --bg:#F6F8FA;
+  --muted:#55616D;
+  --shadow-md:0 8px 24px rgba(16,26,36,.07);
+  --shadow-lg:0 20px 52px rgba(16,26,36,.10);
+}
 
-/* ---- Buttons: flat, no lift ---- */
-.btn,.btn-submit{ border-radius:8px; box-shadow:none !important; transform:none !important; font-weight:600; }
-.btn-lg{ border-radius:8px; }
-.btn-primary:hover,.btn-accent:hover,.btn-submit:hover,.btn:hover{ transform:none !important; box-shadow:none !important; }
-.btn-ghost{ background:transparent; }
+/* ---------- Brand panel ---------- */
+.auth-side{
+  background:
+    radial-gradient(620px 320px at 88% -8%, rgba(69,208,243,.16), transparent 62%),
+    linear-gradient(168deg, #0E1A24 0%, #12242F 100%);
+  padding:40px 48px;
+}
+.auth-side::before{ opacity:.04; }
+.brand-name{ letter-spacing:-.03em; }
+.brand-sub{ color:#8598A8; }
+.side-copy h2{ font-weight:700; letter-spacing:-.03em; }
+.side-copy > p{ color:#A9BAC8; font-size:15px; line-height:1.65; max-width:400px; }
+.points li{ font-size:14px; color:#C6D3DE; line-height:1.5; }
+.points svg{ width:18px; height:18px; margin-top:1px; }
+.side-foot{ color:#7B8FA0; font-size:12px; letter-spacing:.01em; }
 
-/* ---- Inputs ---- */
-.input,.select,.search,.input-wrap input,textarea.input{ border-radius:8px; }
-.input:focus,.select:focus,.input-wrap input:focus,.search:focus-within{ box-shadow:none !important; border-color:var(--cyan-600); outline:0; }
-.input-wrap.invalid input{ box-shadow:none; }
+/* ---------- Form panel ---------- */
+.auth-main{ background:var(--bg); }
+.back{ font-size:13.5px; color:#6E7B87; }
+.theme-toggle{ width:38px; height:38px; border-radius:8px; background:#fff; }
+.theme-toggle:hover{ background:#fff; border-color:var(--line-strong); color:var(--ink); }
 
-/* ---- Cards & surfaces: hairline only ---- */
-.card,.stat,.pv-card,.step{ box-shadow:none !important; border-radius:10px; }
-.card:hover{ transform:none; box-shadow:none; border-color:var(--line); }
+.auth-card{
+  max-width:424px; background:#fff; border:1px solid var(--line);
+  border-radius:14px; padding:36px; box-shadow:var(--shadow-lg);
+}
+.auth-card h1{ font-size:26px; font-weight:700; letter-spacing:-.025em; }
+.auth-card .sub{ font-size:14px; line-height:1.62; margin-bottom:24px; }
 
-/* ---- Pills / chips become quiet text ---- */
-.eyebrow,.chip,.pv-head em{ background:transparent !important; border:0 !important; padding-left:0; padding-right:0; color:var(--cyan-700); }
-.eyebrow .dot,.chip i{ box-shadow:none; width:6px; height:6px; }
+.role-switch{
+  background:#F4F6F8; border-color:var(--line); border-radius:8px;
+  padding:3px; gap:2px; margin-bottom:24px;
+}
+.role-switch button{ border-radius:6px; font-weight:600; font-size:13.5px; padding:8px 12px; }
+.role-switch button.active{ background:#fff; box-shadow:0 1px 2px rgba(16,26,36,.10); }
 
-/* ---- Sidebar menu: solid, flat ---- */
-.sidebar,.pv-side{ background:var(--ink) !important; }
-.nav-menu a.active,.pv-item.on{ background:rgba(255,255,255,.06); box-shadow:none; }
-.nav-menu a,.pv-item{ border-radius:8px; }
+.field label{ font-size:12.5px; font-weight:600; color:#33414E; }
+.input-wrap input{
+  border-radius:8px; border-color:var(--line-strong);
+  padding:11px 13px; font-size:14.5px;
+}
+.input-wrap input:hover{ border-color:#B6C4D0; }
+.input-wrap input:focus{ border-color:var(--cyan-600); box-shadow:0 0 0 3px rgba(31,169,206,.16); }
+.input-wrap.invalid input{ box-shadow:0 0 0 3px rgba(229,72,77,.10); }
+.toggle-pw{ width:34px; height:34px; right:5px; }
 
-/* ---- Top bars: no blur ---- */
-.nav,.topbar{ backdrop-filter:none; -webkit-backdrop-filter:none; }
-.avatar,.pv-user i{ background:var(--cyan); color:var(--ink); }
+.btn-submit{
+  border-radius:8px; background:var(--ink); color:#fff;
+  padding:13px 20px; font-size:15px; font-weight:600;
+}
+.btn-submit:hover{ background:var(--ink-2); box-shadow:none; transform:none; }
+.btn-submit:focus-visible{ outline:3px solid rgba(31,169,206,.35); outline-offset:2px; }
 
-/* =============== Landing page =============== */
-.hero{ background:transparent; padding-top:104px; }
-.hero::before{ display:none; }
-.hero h1{ font-weight:700; letter-spacing:-.04em; }
-.hero h1 .grad{ background:none; -webkit-background-clip:initial; background-clip:initial; color:var(--cyan-700); }
-.hero p.lead{ font-size:18px; }
-.preview{ box-shadow:none; border-radius:12px 12px 0 0; }
-.preview-bar i{ display:none; }
-.preview-bar{ background:transparent; }
+.row-between{ font-size:13.5px; }
+.link{ font-weight:600; }
+.status{ border-radius:8px; font-size:13px; }
+.auth-note{ font-size:12.5px; }
 
-section{ padding:112px 0; }
-.sec-head{ margin-bottom:64px; }
-.sec-head h2{ font-weight:700; }
-.kicker{ letter-spacing:.12em; }
+/* ---------- Dark mode ---------- */
+html[data-theme="dark"] .auth-main{ background:#0B1218; }
+html[data-theme="dark"] .auth-card{ background:#121C25; border-color:#25323E; box-shadow:0 20px 52px rgba(0,0,0,.5); }
+html[data-theme="dark"] .role-switch{ background:#0F1923; border-color:#25323E; }
+html[data-theme="dark"] .role-switch button.active{ background:#1B2A36; box-shadow:none; }
+html[data-theme="dark"] .theme-toggle{ background:#121C25; }
+html[data-theme="dark"] .btn-submit{ background:var(--cyan); color:#0B1218; }
+html[data-theme="dark"] .btn-submit:hover{ background:#63D9F8; }
 
-/* feature cards → open columns separated by a single hairline */
-.grid{ gap:0 48px; }
-#features .card{ background:transparent; border:0; border-top:1px solid var(--line); border-radius:0; padding:28px 0 36px; }
-.icon{ width:auto; height:auto; background:transparent; border:0; border-radius:0; margin-bottom:14px; display:block; }
-.icon svg{ width:22px; height:22px; }
-.how{ background:transparent; border-top:1px solid var(--line); }
-.step{ background:transparent; border:0; border-top:1px solid var(--line); border-radius:0; padding:24px 0 0; }
-.steps{ gap:0 48px; }
-
-footer{ background:transparent; color:var(--muted); border-top:1px solid var(--line); }
-.foot-top{ border-bottom-color:var(--line); }
-.foot-brand .brand-name{ color:var(--ink); }
-.foot-brand .brand-name .c{ color:var(--cyan-600); }
-.foot-brand .brand-sub{ color:var(--muted); }
-.foot-brand p b{ color:var(--cyan-700); }
-.foot-links h5{ color:var(--ink); }
-.foot-links a:hover{ color:var(--cyan-700); }
-
-/* =============== Login =============== */
-.auth-side{ background:var(--ink) !important; }
-.auth-side::before{ display:none; }
-.auth-card{ background:transparent; border:0; box-shadow:none; padding:0; border-radius:0; }
-.role-switch{ border-radius:8px; }
-.role-switch button.active{ box-shadow:none; border-radius:6px; }
-
-/* =============== Dashboards =============== */
-.content{ padding-top:40px; }
-.page-head{ margin-bottom:32px; }
-.page-head h1{ font-weight:700; }
-.card-head{ margin-bottom:16px; }
-.chart .b{ background:var(--cyan) !important; border-radius:6px 6px 0 0; }
-.chart .col.cur .b{ background:var(--ink) !important; }
-tr.flag-row td:first-child{ box-shadow:none; }
-.badge,.tag,.pill,.status-pill{ box-shadow:none; }
-
-@media (max-width:980px){ .grid,.steps{ gap:0 32px; } section{ padding:80px 0; } }
-@media (max-width:640px){ section{ padding:60px 0; } .hero{ padding-top:56px; } .grid,.steps{ gap:0; } }
-
-/* ---- Dashboards: open surfaces, hairline dividers ---- */
-body.app-body,.main{ background:var(--white,#fff); }
-html[data-theme="dark"] body.app-body,html[data-theme="dark"] .main{ background:var(--bg); }
-.topbar{ background:transparent; border-bottom:1px solid var(--line); }
-.search,.icon-btn.theme-toggle,.theme-toggle{ background:transparent; box-shadow:none; }
-.content .card,.content .stat{ background:transparent; border:0; border-top:1px solid var(--line); border-radius:0; padding:24px 0 8px; }
-.grid-top,.stats{ gap:0 48px; }
-.legend-row,.doc-item,.req-item,.list-item{ border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent; padding-left:0; padding-right:0; }
-.legend-row:last-child{ border-bottom:0; }
-.msg.them{ background:transparent; }
-
-/* ---- Dark mode: keep it just as flat ---- */
-html[data-theme="dark"] .hero{ background:transparent; }
-html[data-theme="dark"] .content .card,
-html[data-theme="dark"] .content .stat,
-html[data-theme="dark"] #features .card,
-html[data-theme="dark"] .step{ background:transparent; box-shadow:none; }
-html[data-theme="dark"] .avatar,
-html[data-theme="dark"] .pv-user i{ background:var(--cyan); color:var(--ink); }
-html[data-theme="dark"] footer{ background:transparent; color:var(--muted); }
-html[data-theme="dark"] .foot-brand .brand-name{ color:var(--d-text,#E7EEF4); }
-html[data-theme="dark"] .foot-links h5{ color:var(--d-text,#E7EEF4); }
-html[data-theme="dark"] .foot-brand .brand-name .c{ color:var(--cyan); }
-html[data-theme="dark"] .legend-row,
-html[data-theme="dark"] .doc-item{ background:transparent; border-color:var(--line); }
-
-/* Login card: rounded border */
-.auth-card,
-html[data-theme="dark"] .auth-card{ border:1px solid var(--line); border-radius:16px; padding:36px 32px; box-shadow:none; }
-.auth-card .auth-note{ border-radius:0 0 12px 12px; }
-@media (max-width:480px){ .auth-card,html[data-theme="dark"] .auth-card{ padding:28px 20px; } }
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .auth-side{ padding:24px 24px; }
+}
+@media (max-width:480px){
+  .auth-card{ padding:28px 20px; border-radius:12px; }
+}
