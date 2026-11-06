@@ -283,19 +283,30 @@
           </div>
 
           <div id="panelScan" role="tabpanel" aria-labelledby="tabScan" hidden>
+            <div class="scan-kind">
+              <span class="muted small">Scanning</span>
+              <div class="seg" role="group" aria-label="What are you scanning?">
+                <button type="button" class="seg-btn" id="scanKindReceipt" aria-pressed="true">Receipt</button>
+                <button type="button" class="seg-btn" id="scanKindStatement" aria-pressed="false">Financial statement</button>
+              </div>
+            </div>
             <div class="scan-start">
               <button type="button" class="btn inline" data-scan-open><svg class="ico"><use href="#i-camera"/></svg>Open camera</button>
-              <p class="muted small">Fit the receipt in the frame and take the photo. We read it and add it to your tracker for you.</p>
+              <p class="muted small" id="scanKindHelp">Fit the receipt in the frame and take the photo. We read it and add it to your tracker for you.</p>
             </div>
             <div class="dropzone" id="receiptZone" tabindex="0" role="button" aria-label="Choose a receipt photo to read">
               <svg class="ico"><use href="#i-scan"/></svg>
-              <strong>Or drop a receipt photo, or click to browse</strong>
-              <span>JPG or PNG. We read the vendor, date and total, then add it to your tracker.</span>
+              <strong id="scanDropTitle">Or drop a receipt photo, or click to browse</strong>
+              <span id="scanDropSub">JPG or PNG. We read the vendor, date and total, then add it to your tracker.</span>
               <input type="file" id="receiptInput" accept="image/*" hidden>
             </div>
             <div class="field-error block" id="receiptErr" role="alert" hidden></div>
             <div class="ocr-status" id="ocrStatus" role="status" aria-live="polite" hidden></div>
             <div class="ocr-result" id="ocrResult" hidden></div>
+            <div class="stmt-register" id="stmtRegister" hidden>
+              <div class="stmt-register-head"><h4>Statements you have checked</h4><span class="muted small" id="stmtCount"></span></div>
+              <div id="stmtRows"></div>
+            </div>
             <p class="muted small" style="margin-top:14px">The photo is read in your browser and never uploaded.</p>
           </div>
         </section>
@@ -449,13 +460,13 @@
 </div>
 
 <!-- Receipt camera -->
-<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a receipt" hidden>
+<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a document" hidden>
   <video class="scan-video" id="scanVideo" playsinline muted autoplay hidden></video>
   <div class="scan-bg" aria-hidden="true"></div>
 
   <div class="scan-top">
     <button type="button" class="scan-circle" id="scanClose" aria-label="Close camera"><svg class="ico"><use href="#i-x"/></svg></button>
-    <div class="scan-hint">Snap the receipt</div>
+    <div class="scan-hint" id="scanHint">Snap the receipt</div>
     <button type="button" class="scan-circle" id="scanFlash" aria-label="Toggle flash" aria-pressed="false"><svg class="ico"><use href="#i-bolt"/></svg></button>
   </div>
 
@@ -477,8 +488,8 @@
     <div class="sheet-row">
       <div class="scan-thumb" id="scanThumb"><svg class="ico"><use href="#i-scan"/></svg></div>
       <div>
-        <h3>Photo taken</h3>
-        <p>We'll read the vendor, date and total, then add it to your tracker.</p>
+        <h3 id="scanSheetTitle">Photo taken</h3>
+        <p id="scanSheetText">We'll read the vendor, date and total, then add it to your tracker.</p>
       </div>
     </div>
     <div class="btn-row">
@@ -822,6 +833,30 @@
   var OCR_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
   var ocrLoader = null, ocrBusy = false;
   var receiptZone = $('#receiptZone'), receiptInput = $('#receiptInput');
+  var scanKind = 'receipt';
+
+  function setScanKind(kind) {
+    scanKind = kind === 'statement' ? 'statement' : 'receipt';
+    var st = scanKind === 'statement';
+    $('#scanKindReceipt').setAttribute('aria-pressed', String(!st));
+    $('#scanKindStatement').setAttribute('aria-pressed', String(st));
+    $('#scanKindHelp').textContent = st
+      ? 'Fit the statement in the frame and take the photo. We read the totals and check for anomalies.'
+      : 'Fit the receipt in the frame and take the photo. We read it and add it to your tracker for you.';
+    $('#scanDropTitle').textContent = st ? 'Or drop a statement photo, or click to browse' : 'Or drop a receipt photo, or click to browse';
+    $('#scanDropSub').textContent = st ? 'JPG or PNG. We read the totals and dates, then check the statement for anomalies.' : 'JPG or PNG. We read the vendor, date and total, then add it to your tracker.';
+    receiptZone.setAttribute('aria-label', st ? 'Choose a financial statement photo to check' : 'Choose a receipt photo to read');
+    $('#scanHint').textContent = st ? 'Snap the statement' : 'Snap the receipt';
+    $('#scanSheetTitle').textContent = st ? 'Statement photo taken' : 'Photo taken';
+    $('#scanSheetText').textContent = st ? 'We will read the totals and check the statement for anomalies.' : "We'll read the vendor, date and total, then add it to your tracker.";
+    $('#scanUse').textContent = st ? 'Check this statement' : 'Read this receipt';
+    $('#receiptErr').hidden = true;
+    $('#ocrResult').hidden = true;
+    setStatus('');
+  }
+  $('#scanKindReceipt').addEventListener('click', function () { setScanKind('receipt'); });
+  $('#scanKindStatement').addEventListener('click', function () { setScanKind('statement'); });
+  setScanKind('receipt');
 
   function loadOCR() {
     if (window.Tesseract) return Promise.resolve();
@@ -856,40 +891,43 @@
     if (!file || ocrBusy) return;
     receiptErr('');
     if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|bmp)$/i.test(file.name)) {
-      receiptErr('That file isn\u2019t a photo. Use a JPG or PNG image of the receipt.');
+      receiptErr('That file isn\u2019t a photo. Use a JPG or PNG image of the document.');
       return;
     }
     if (file.size > MAX_SIZE) { receiptErr('That photo is over the 10 MB limit. Try a smaller one.'); return; }
     var reader = new FileReader();
-    reader.onload = function () { runOCR(String(reader.result)); };
+    reader.onload = function () { runOCR(String(reader.result), scanKind); };
     reader.onerror = function () { receiptErr('We couldn\u2019t open that file. Try another photo.'); };
     reader.readAsDataURL(file);
   }
 
-  function runOCR(dataUrl) {
+  function runOCR(dataUrl, kind) {
+    var statement = kind === 'statement';
+    var what = statement ? 'statement' : 'receipt';
     ocrBusy = true;
     $('#ocrResult').hidden = true;
-    setStatus('Loading the receipt reader\u2026');
+    setStatus('Loading the ' + what + ' reader\u2026');
     loadOCR().then(function () {
-      setStatus('Reading the receipt\u2026');
+      setStatus('Reading the ' + what + '\u2026');
       return window.Tesseract.recognize(dataUrl, 'eng', {
         logger: function (m) {
-          if (m.status === 'recognizing text') setStatus('Reading the receipt\u2026 ' + Math.round((m.progress || 0) * 100) + '%');
+          if (m.status === 'recognizing text') setStatus('Reading the ' + what + '\u2026 ' + Math.round((m.progress || 0) * 100) + '%');
         }
       });
     }).then(function (res) {
-      handleScan((res && res.data && res.data.text) || '', dataUrl);
+      handleScan((res && res.data && res.data.text) || '', dataUrl, kind);
     }).catch(function () {
       setStatus('');
       receiptErr(window.Tesseract
-        ? 'We couldn\u2019t read that photo. Try a sharper, straight-on shot, or add the transaction manually.'
-        : 'The receipt reader needs an internet connection the first time. Add the transaction manually, or try again online.');
+        ? 'We couldn\u2019t read that photo. Try a sharper, straight-on shot, or ' + (statement ? 'scan the statement again.' : 'add the transaction manually.')
+        : 'The ' + what + ' reader needs an internet connection the first time. ' + (statement ? 'Try again online.' : 'Add the transaction manually, or try again online.'));
     }).then(function () {
       ocrBusy = false;
     });
   }
 
-  function handleScan(text, dataUrl) {
+  function handleScan(text, dataUrl, kind) {
+    if (kind === 'statement') { handleStatement(text, dataUrl); return; }
     var read = parseReceipt(text);
     setStatus('');
     if (read.amount > 0) {
@@ -976,7 +1014,7 @@
   }
 
   function openScanner() {
-    if (ocrBusy) { toast('Hold on \u2014 we\u2019re still reading the last receipt.'); return; }
+    if (ocrBusy) { toast('Hold on \u2014 we\u2019re still reading the last document.'); return; }
     setTab(true);
     camOpener = document.activeElement;
     scanSheet.hidden = true; scanMsg.hidden = true;
@@ -1049,7 +1087,7 @@
     if (!shotUrl) { $('#scanShutter').focus(); return; }
     var url = shotUrl;
     closeScanner();
-    runOCR(url);
+    runOCR(url, scanKind);
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !scanner.hidden) closeScanner(); });
 
@@ -1130,6 +1168,112 @@
 
   function parseReceipt(text) {
     return { vendor: findVendor(text), amount: findAmount(text), date: findDate(text), cat: guessCat(text) };
+  }
+
+  /* ---------- Financial statement checks ---------- */
+  function statementNumbers(text) {
+    var out = [], re = /(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g, m;
+    while ((m = re.exec(String(text || '')))) {
+      var v = parseFloat(m[0].replace(/,/g, ''));
+      if (!isNaN(v) && v >= 1 && v <= 1e9) out.push(v);
+    }
+    return out;
+  }
+
+  function labelledAmount(text, re) {
+    var lines = String(text || '').split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+      if (!re.test(lines[i])) continue;
+      var nums = lines[i].match(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g) || [];
+      if (!nums.length) continue;
+      var v = parseFloat(nums[nums.length - 1].replace(/,/g, ''));
+      if (v >= 1 && v <= 1e9) return v;
+    }
+    return 0;
+  }
+
+  function parseStatement(text) {
+    return { name: findVendor(text), total: findAmount(text), date: findDate(text) };
+  }
+
+  function statementChecks(read, text) {
+    var out = [];
+    var total = read.total;
+
+    if (!total) out.push({ label: 'Total not read', detail: 'We could not find a statement total. Check that the figures are in the photo and not cut off.', sev: 'high' });
+    if (!read.date) out.push({ label: 'No date read', detail: 'The statement has no readable date, so the period cannot be verified.', sev: 'med' });
+    else if (read.date > isoToday()) out.push({ label: 'Future date', detail: 'The statement is dated after today, which is not possible for a filed statement.', sev: 'high' });
+    if (total >= 50000 && total % 10000 === 0) out.push({ label: 'Round-number total', detail: peso(total) + ' is a round figure at or above the ' + peso(50000) + ' approval limit. Verify it against the ledger.', sev: 'med' });
+    if (total >= 47500 && total < 50000) out.push({ label: 'Just under the limit', detail: peso(total) + ' sits within 5% of the ' + peso(50000) + ' approval limit.', sev: 'high' });
+
+    var assets = labelledAmount(text, /total\s*assets/i);
+    var liab = labelledAmount(text, /total\s*liabilit/i);
+    var equity = labelledAmount(text, /total\s*(equity|stockholders|shareholders)/i);
+    if (assets && liab && equity) {
+      var gap = assets - (liab + equity);
+      if (Math.abs(gap) > Math.max(100, assets * 0.01)) out.push({ label: 'Balance sheet does not balance', detail: 'Total assets are ' + peso(assets) + ', but liabilities plus equity add up to ' + peso(liab + equity) + ' (a ' + peso(Math.abs(gap)) + ' gap).', sev: 'high', variance: Math.round(Math.abs(gap) / assets * 100) });
+    }
+
+    var revenue = labelledAmount(text, /total\s*(revenue|sales)/i);
+    var expenses = labelledAmount(text, /total\s*(expenses?|costs?)/i);
+    var net = labelledAmount(text, /net\s*(income|profit)/i);
+    if (revenue && expenses && net) {
+      var diff = revenue - expenses - net;
+      if (Math.abs(diff) > Math.max(100, revenue * 0.01)) out.push({ label: 'Income statement does not reconcile', detail: 'Revenue of ' + peso(revenue) + ' less expenses of ' + peso(expenses) + ' gives ' + peso(revenue - expenses) + ', not the stated net income of ' + peso(net) + '.', sev: 'high', variance: Math.round(Math.abs(diff) / revenue * 100) });
+    }
+
+    var counts = {};
+    statementNumbers(text).forEach(function (v) { if (v >= 1000 && !(v >= 1900 && v <= 2100)) counts[v] = (counts[v] || 0) + 1; });
+    Object.keys(counts).forEach(function (k) {
+      if (counts[k] >= 3 && Number(k) !== total) out.push({ label: 'Repeated amount', detail: peso(Number(k)) + ' appears ' + counts[k] + ' times on the statement. Make sure these are separate entries.', sev: 'med' });
+    });
+
+    return out;
+  }
+
+  function handleStatement(text, dataUrl) {
+    var read = parseStatement(text);
+    var checks = statementChecks(read, text);
+    var rec = {
+      id: 'st' + Date.now() + Math.random().toString(36).slice(2, 6),
+      name: read.name || 'Scanned statement', date: read.date || '',
+      total: read.total || 0, verdict: checks.length ? 'flagged' : 'clear',
+      reasons: checks, when: nowStamp()
+    };
+    var all = store.get('dcm_statements', []);
+    if (!Array.isArray(all)) all = [];
+    all.unshift(rec);
+    store.set('dcm_statements', all);
+    renderStatementRegister();
+    setStatus('');
+    var el = $('#ocrResult');
+    el.innerHTML = '<div class="ocr-thumb"><img src="' + dataUrl + '" alt="The financial statement you scanned"></div>' +
+      '<div class="ocr-read"><strong' + (checks.length ? ' class="bad"' : '') + '><svg class="ico"><use href="#' + (checks.length ? 'i-alert' : 'i-check') + '"/></svg>' + (checks.length ? 'Statement flagged for review' : 'No anomalies found') + '</strong>' +
+      '<span>' + esc(rec.name) + (rec.date ? ' \u00b7 ' + esc(fmtISO(rec.date)) : ' \u00b7 Date not read') + '</span>' +
+      '<span class="ocr-amt">' + (rec.total ? peso(rec.total) : 'Total not read') + '</span>' +
+      (checks.length ? '<ul class="stmt-reasons">' + checks.map(function (c) { return '<li><b>' + esc(c.label) + '</b> \u2014 ' + esc(c.detail) + '</li>'; }).join('') + '</ul>' : '') +
+      '<span>Saved to your statement register.</span>' +
+      '<div class="btn-row"><button type="button" class="btn inline sm" data-scan-again>Scan another statement</button></div></div>';
+    el.hidden = false;
+    toast(checks.length
+      ? 'Statement checked: ' + checks.length + ' anomal' + (checks.length === 1 ? 'y' : 'ies') + ' found. Saved to your statement register.'
+      : 'Statement checked. No anomalies found. Saved to your statement register.', checks.length ? 'error' : '');
+  }
+
+  function renderStatementRegister() {
+    var wrap = $('#stmtRegister');
+    if (!wrap) return;
+    var rows = store.get('dcm_statements', []);
+    if (!Array.isArray(rows)) rows = [];
+    wrap.hidden = rows.length === 0;
+    $('#stmtCount').textContent = rows.length + (rows.length === 1 ? ' check' : ' checks');
+    $('#stmtRows').innerHTML = rows.map(function (r) {
+      var reasons = r.reasons || [];
+      var bad = reasons.length > 0;
+      return '<div class="stmt-row"><div><strong>' + esc(r.name || 'Scanned statement') + '</strong>' +
+        '<span class="sub">' + (r.date ? esc(fmtISO(r.date)) : 'Date not read') + ' \u00b7 ' + (r.total ? peso(r.total) : 'Total not read') + '</span></div>' +
+        '<span class="badge ' + (bad ? 'flagged' : 'verified') + '">' + (bad ? reasons.length + ' anomal' + (reasons.length === 1 ? 'y' : 'ies') : 'Clear') + '</span></div>';
+    }).join('');
   }
 
   /* ---------- Messages ---------- */
@@ -1292,7 +1436,7 @@
 
   /* ---------- Init ---------- */
   txDate.value = isoToday();
-  renderAll(); renderQueue(); renderUploads(); renderMsgs();
+  renderAll(); renderQueue(); renderUploads(); renderMsgs(); renderStatementRegister();
   loadSettings(); updateUser();
   route();
 })();

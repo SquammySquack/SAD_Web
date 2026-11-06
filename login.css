@@ -289,3 +289,22 @@ html[data-theme="dark"] .btn-submit:hover{ background:#63D9F8; }
 @media (max-width:480px){
   .auth-card{ padding:28px 20px; border-radius:12px; }
 }
+
+/* ---------- Create a client account ---------- */
+[hidden]{ display:none !important; }
+.auth-card h1{ text-wrap:balance; }
+.auth-card h1:focus{ outline:none; }
+.auth-switch{ margin-top:18px; text-align:center; font-size:13px; color:var(--muted); }
+.auth-switch .link{ font-weight:600; }
+.hint{ margin-top:6px; font-size:12px; color:#6B7885; }
+.field.invalid .hint{ display:none; }
+html[data-theme="dark"] .hint{ color:#93A5B4; }
+/* the taller sign-up card must stay reachable on short desktop windows */
+@media (min-width:901px){
+  .auth-main{ align-items:flex-start; }
+  .auth-card{ margin-block:auto; }
+}
+@media (max-width:480px){
+  .auth-switch{ margin-top:16px; }
+  .hint{ font-size:12.5px; }
+}

@@ -24,7 +24,7 @@
 
     <div class="side-copy">
       <h2>Diligence & <span>Commitment</span> Matter</h2>
-      <p>Welcome back. Your documents, spending and alerts are waiting.</p>
+      <p id="sideSub">Welcome back. Your documents, spending and alerts are waiting.</p>
       <ul class="points">
         <li><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>Catches ghost vendors and duplicate invoices</li>
         <li><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 6-7"/></svg>AI-powered risk scores for every client</li>
@@ -43,7 +43,7 @@
     <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode"><svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
 
     <div class="auth-card">
-      <h1 id="title">Client Login</h1>
+      <h1 id="title" tabindex="-1">Client Login</h1>
       <p class="sub" id="subtitle">Log in to send documents, check your spending and read alerts from your CPA.</p>
 
       <div class="role-switch" role="tablist" aria-label="Login type">
@@ -64,8 +64,8 @@
           <label for="password">Password</label>
           <div class="input-wrap has-toggle">
             <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
-              <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <button type="button" class="toggle-pw" id="togglePw" data-pw="password" aria-label="Show password">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
           <div class="field-error" id="pwError" role="alert">Enter your password to continue.</div>
@@ -78,9 +78,52 @@
 
         <button type="submit" class="btn-submit" id="submitBtn">Log in to my portal</button>
         <div class="status" id="status" role="status" aria-live="polite"></div>
+        <p class="auth-switch">New to DCM &amp; Co.? <a href="#signup" class="link" id="toSignup">Create a client account</a></p>
       </form>
 
-      <p class="auth-note" id="note">On the DCM & Co. team? Use the Staff tab.</p>
+      <form id="signupForm" novalidate hidden>
+        <div class="field" id="suNameField">
+          <label for="suName">Full name</label>
+          <div class="input-wrap">
+            <input type="text" id="suName" name="name" placeholder="Maria Santos" autocomplete="name" required>
+          </div>
+          <div class="field-error" id="suNameError" role="alert">Enter your full name.</div>
+        </div>
+
+        <div class="field" id="suEmailField">
+          <label for="suEmail">Email address</label>
+          <div class="input-wrap">
+            <input type="email" id="suEmail" name="email" placeholder="you@company.com" autocomplete="email" required>
+          </div>
+          <div class="field-error" id="suEmailError" role="alert">Enter your email.</div>
+        </div>
+
+        <div class="field" id="suPwField">
+          <label for="suPw">Password</label>
+          <div class="input-wrap has-toggle">
+            <input type="password" id="suPw" name="new-password" placeholder="At least 8 characters" autocomplete="new-password" required>
+            <button type="button" class="toggle-pw" data-pw="suPw" aria-label="Show password">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="hint">At least 8 characters.</p>
+          <div class="field-error" id="suPwError" role="alert">Use at least 8 characters.</div>
+        </div>
+
+        <div class="field" id="suPw2Field">
+          <label for="suPw2">Confirm password</label>
+          <div class="input-wrap">
+            <input type="password" id="suPw2" name="confirm-password" placeholder="Re-enter your password" autocomplete="new-password" required>
+          </div>
+          <div class="field-error" id="suPw2Error" role="alert">Your passwords don&rsquo;t match.</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="signupBtn">Create my account</button>
+        <div class="status" id="suStatus" role="status" aria-live="polite"></div>
+        <p class="auth-switch">Already have an account? <a href="#login" class="link" id="toLogin">Log in</a></p>
+      </form>
+
+      <p class="auth-note" id="note">On the DCM &amp; Co. team? Use the Staff tab.</p>
     </div>
   </section>
 
@@ -112,6 +155,19 @@
   var form = $('loginForm'), idInput = $('identifier'), pwInput = $('password');
   var status = $('status');
   var current = 'client';
+  var mode = 'login';
+
+  var signupForm = $('signupForm'), suName = $('suName'), suEmail = $('suEmail'),
+      suPw = $('suPw'), suPw2 = $('suPw2'), suStatus = $('suStatus'), signupBtn = $('signupBtn');
+  var roleSwitch = document.querySelector('.role-switch');
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var ACCOUNTS_KEY = 'dcm_accounts';
+
+  var signupCopy = {
+    title: 'Create your client account',
+    sub: 'Set up portal access in about a minute. You can upload documents as soon as you are in.',
+    side: 'Create your account to upload receipts, track spending and read alerts from your CPA.'
+  };
 
   function setRole(role, updateUrl) {
     if (!roles[role]) role = 'client';
@@ -135,11 +191,10 @@
     }
   }
 
-  function showStatus(type, msg) {
-    status.className = 'status show ' + type;
-    status.textContent = msg;
-  }
-  function hideStatus() { status.className = 'status'; status.textContent = ''; }
+  function paint(box, type, msg) { box.className = 'status show ' + type; box.textContent = msg; }
+  function clearBox(box) { box.className = 'status'; box.textContent = ''; }
+  function showStatus(type, msg) { paint(status, type, msg); }
+  function hideStatus() { clearBox(status); }
 
   function setInvalid(fieldId, bad) {
     $(fieldId).classList.toggle('invalid', bad);
@@ -147,7 +202,7 @@
   }
 
   function checkEmail() {
-    var v = idInput.value.trim(), ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    var v = idInput.value.trim(), ok = EMAIL_RE.test(v);
     $('idError').textContent = !v ? 'Enter your email so we know who\u2019s logging in.' : 'That email doesn\u2019t look right. Try something like name@company.com.';
     setInvalid('idField', !ok);
     return ok;
@@ -159,13 +214,17 @@
     t.addEventListener('click', function () { setRole(t.dataset.role, true); });
   });
 
-  $('togglePw').addEventListener('click', function () {
-    var show = pwInput.type === 'password';
-    pwInput.type = show ? 'text' : 'password';
-    this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-    $('eyeIcon').innerHTML = show
-      ? '<path d="M17.9 17.9A10.9 10.9 0 0112 19C5 19 1 12 1 12a18.5 18.5 0 015.1-5.9M9.9 4.2A10.5 10.5 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.2 3.2M14.1 14.1a3 3 0 11-4.2-4.2"/><path d="M1 1l22 22"/>'
-      : '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+  var EYE_OPEN = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+  var EYE_SHUT = '<path d="M17.9 17.9A10.9 10.9 0 0112 19C5 19 1 12 1 12a18.5 18.5 0 015.1-5.9M9.9 4.2A10.5 10.5 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.2 3.2M14.1 14.1a3 3 0 11-4.2-4.2"/><path d="M1 1l22 22"/>';
+  Array.prototype.forEach.call(document.querySelectorAll('.toggle-pw'), function (btn) {
+    var input = $(btn.dataset.pw);
+    if (!input) return;
+    btn.addEventListener('click', function () {
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      btn.querySelector('svg').innerHTML = show ? EYE_SHUT : EYE_OPEN;
+    });
   });
 
   $('forgot').addEventListener('click', function (e) {
@@ -203,8 +262,108 @@
   idInput.addEventListener('input', function () { if ($('idField').classList.contains('invalid')) checkEmail(); });
   pwInput.addEventListener('input', function () { if (pwInput.value) setInvalid('pwField', false); });
 
-  var param = new URLSearchParams(window.location.search).get('role');
-  setRole(param === 'staff' ? 'staff' : 'client', false);
+  /* ---------- Create a client account ---------- */
+  function accounts() {
+    try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || {}; } catch (err) { return {}; }
+  }
+  function saveAccounts(list) {
+    try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(list)); } catch (err) {}
+  }
+
+  function setMode(next) {
+    mode = next === 'signup' ? 'signup' : 'login';
+    var up = mode === 'signup';
+    form.hidden = up;
+    signupForm.hidden = !up;
+    roleSwitch.hidden = up;
+    $('note').hidden = up;
+    $('title').textContent = up ? signupCopy.title : roles[current].title;
+    $('subtitle').textContent = up ? signupCopy.sub : roles[current].sub;
+    $('sideSub').textContent = up ? signupCopy.side : 'Welcome back. Your documents, spending and alerts are waiting.';
+    document.title = (up ? signupCopy.title : roles[current].title) + ' | DCM & Co.';
+    hideStatus();
+    clearBox(suStatus);
+    $('title').focus();
+  }
+
+  function suCheckName() {
+    var v = suName.value.trim(), ok = v.length >= 2;
+    $('suNameError').textContent = !v ? 'Enter your full name.' : 'That looks too short. Enter your full name.';
+    setInvalid('suNameField', !ok);
+    return ok;
+  }
+  function suCheckEmail() {
+    var v = suEmail.value.trim(), ok = EMAIL_RE.test(v);
+    $('suEmailError').textContent = !v ? 'Enter your email.' : 'That email doesn\u2019t look right. Try name@company.com.';
+    setInvalid('suEmailField', !ok);
+    return ok;
+  }
+  function suCheckPw() {
+    var ok = suPw.value.length >= 8;
+    $('suPwError').textContent = suPw.value ? 'Use at least 8 characters.' : 'Choose a password.';
+    setInvalid('suPwField', !ok);
+    return ok;
+  }
+  function suCheckPw2() {
+    var ok = suPw2.value.length > 0 && suPw2.value === suPw.value;
+    $('suPw2Error').textContent = suPw2.value ? 'Your passwords don\u2019t match.' : 'Re-enter your password.';
+    setInvalid('suPw2Field', !ok);
+    return ok;
+  }
+
+  $('toSignup').addEventListener('click', function (e) { e.preventDefault(); setMode('signup'); });
+  $('toLogin').addEventListener('click', function (e) {
+    e.preventDefault();
+    setRole(current, true);
+    setMode('login');
+  });
+
+  suName.addEventListener('input', function () { if ($('suNameField').classList.contains('invalid')) suCheckName(); });
+  suEmail.addEventListener('input', function () { if ($('suEmailField').classList.contains('invalid')) suCheckEmail(); });
+  suPw.addEventListener('input', function () {
+    if ($('suPwField').classList.contains('invalid')) suCheckPw();
+    if ($('suPw2Field').classList.contains('invalid')) suCheckPw2();
+  });
+  suPw2.addEventListener('input', function () { if ($('suPw2Field').classList.contains('invalid')) suCheckPw2(); });
+
+  signupForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearBox(suStatus);
+
+    var nameOk = suCheckName(), emailOk = suCheckEmail(), pwOk = suCheckPw(), pw2Ok = suCheckPw2();
+    if (!nameOk) { suName.focus(); return; }
+    if (!emailOk) { suEmail.focus(); return; }
+    if (!pwOk) { suPw.focus(); return; }
+    if (!pw2Ok) { suPw2.focus(); return; }
+
+    var name = suName.value.trim(), email = suEmail.value.trim();
+    var list = accounts();
+    if (list[email.toLowerCase()]) {
+      $('suEmailError').textContent = 'An account already exists for this email. Log in instead.';
+      setInvalid('suEmailField', true);
+      suEmail.focus();
+      return;
+    }
+
+    // TODO: send this to a real server (POST /api/signup) and verify the email.
+    // This is a front-end demo: no password is stored in the browser.
+    list[email.toLowerCase()] = { name: name, email: email, createdAt: new Date().toISOString() };
+    saveAccounts(list);
+
+    try {
+      localStorage.setItem('dcm_name', name);
+      localStorage.setItem('dcm_email', email);
+      sessionStorage.setItem('dcm_session', JSON.stringify({ role: 'client', email: email, name: name }));
+    } catch (err) {}
+
+    signupBtn.disabled = true;
+    paint(suStatus, 'info', 'Account created. Taking you to your portal...');
+    window.location.href = 'clientside.html';
+  });
+
+  var query = new URLSearchParams(window.location.search);
+  setRole(query.get('role') === 'staff' ? 'staff' : 'client', false);
+  if (query.get('mode') === 'signup') setMode('signup');
 })();
 </script>
 </body>

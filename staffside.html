@@ -232,7 +232,7 @@
         <div class="page-head">
           <div>
             <h1>Receipts</h1>
-            <p>Add a receipt and we’ll check it for duplicates and ghost vendors straight away.</p>
+            <p>Add a receipt and we’ll check it for duplicates and ghost vendors straight away. Or scan a financial statement to check it for anomalies.</p>
           </div>
           <div class="head-actions">
             <button type="button" class="btn primary" data-scan-open><svg class="ico"><use href="#i-camera"/></svg>Scan receipt</button>
@@ -277,21 +277,29 @@
         <div class="page-head">
           <div>
             <h1>Fraud Analytics</h1>
-            <p>Problems we found by comparing receipts across your clients.</p>
+            <p>Rules catch the cross-client problems. The document model reads inside each receipt and explains what is wrong with it.</p>
           </div>
           <span class="chip"><i></i> Sample data</span>
         </div>
 
-        <div class="stats">
-          <div class="stat red"><small>Open alerts</small><strong id="stOpen">0</strong><span>Need review</span></div>
-          <div class="stat"><small>Ghost vendors</small><strong id="stGhost">0</strong><span>TIN shared by 3+ clients</span></div>
-          <div class="stat amber"><small>Duplicate invoices</small><strong id="stDup">0</strong><span>Same client, same invoice</span></div>
+        <div class="tabs" role="tablist" aria-label="Fraud analytics sections">
+          <button type="button" class="tab on" role="tab" id="tabAlerts" aria-selected="true" aria-controls="panelAlerts" data-ftab="alerts">Alerts<span class="tab-count" id="tabAlertCount">0</span></button>
+          <button type="button" class="tab" role="tab" id="tabForensics" aria-selected="false" aria-controls="panelForensics" data-ftab="forensics" tabindex="-1">Document forensics<span class="tab-count" id="tabFxCount" hidden>0</span></button>
+          <button type="button" class="tab" role="tab" id="tabFSA" aria-selected="false" aria-controls="panelFSA" data-ftab="fsa" tabindex="-1">Financial Statement Analytics<span class="tab-count" id="tabFSACount" hidden>0</span></button>
+        </div>
+
+        <div class="ftab" id="panelAlerts" role="tabpanel" aria-labelledby="tabAlerts">
+        <div class="stats five">
+          <div class="stat red"><small>Open alerts</small><strong id="stOpen">0</strong><span>All sources</span></div>
+          <div class="stat"><small>Cross-client</small><strong id="stCross">0</strong><span>Ghost vendors + duplicates</span></div>
+          <div class="stat red"><small>Document alerts</small><strong id="stFx">0</strong><span>Flagged receipts</span></div>
+          <div class="stat amber"><small>Statement alerts</small><strong id="stFsa">0</strong><span>Flagged statements</span></div>
           <div class="stat red"><small>High-risk clients</small><strong id="stHigh">0</strong><span id="stHighNote"></span></div>
         </div>
 
         <section class="card" style="margin-bottom:22px">
           <div class="toolbar">
-            <h3>Alerts</h3>
+            <h3>All alerts</h3>
             <select class="select" id="alertFilter" aria-label="Filter alerts">
               <option value="all">All alerts</option>
               <option value="open">Open</option>
@@ -299,6 +307,7 @@
               <option value="resolved">Resolved</option>
             </select>
           </div>
+          <p class="muted small" style="margin:0 0 14px">Combines cross-client checks, document forensics and financial statement analytics.</p>
           <div class="alert-list scope" id="fraudList"></div>
           <div class="empty" hidden>No alerts fit this filter.</div>
         </section>
@@ -307,6 +316,110 @@
           <div class="card-head"><h3><svg class="ico"><use href="#i-cpu"/></svg>Risk by client</h3></div>
           <div id="riskBars"></div>
         </section>
+        </div>
+
+        <!-- Document forensics (LLM) -->
+        <div class="ftab" id="panelForensics" role="tabpanel" aria-labelledby="tabForensics" hidden>
+          <div class="fx-engine">
+            <div class="fx-engine-main">
+              <span class="fx-model"><svg class="ico"><use href="#i-cpu"/></svg>doc-forensics-v2 · LLM</span>
+              <p>Reads the vendor name, TIN, dates and totals inside each document, compares them with the register, and explains every flag in plain English. Everything runs on the documents already in this browser.</p>
+            </div>
+            <button type="button" class="btn dark sm" id="fxRun"><svg class="ico"><use href="#i-sync"/></svg><span>Re-run analysis</span></button>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><small>Documents analysed</small><strong id="fxDocs">0</strong><span>In the receipt register</span></div>
+            <div class="stat red"><small>Flagged for review</small><strong id="fxFlagged">0</strong><span>Authenticity below 70%</span></div>
+            <div class="stat amber"><small>Signals found</small><strong id="fxSignals">0</strong><span>Field, template and amount checks</span></div>
+            <div class="stat"><small>Shared templates</small><strong id="fxClusters">0</strong><span>Same layout, different TIN</span></div>
+          </div>
+
+          <section class="card" style="margin-bottom:22px">
+            <div class="toolbar">
+              <h3>Document reports</h3>
+              <div class="filters">
+                <select class="select" id="fxFilter" aria-label="Filter document reports">
+                  <option value="all">All documents</option>
+                  <option value="flagged">Flagged only</option>
+                  <option value="fake">Likely fabricated</option>
+                  <option value="clear">Clear</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap scope">
+              <table>
+                <thead><tr><th>Document</th><th>Client</th><th>Fields read</th><th>Signals</th><th>Authenticity</th><th></th></tr></thead>
+                <tbody id="fxRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>No documents fit this filter.</div>
+          </section>
+
+          <div class="grid-top">
+            <section class="card">
+              <div class="card-head">
+                <h3><svg class="ico"><use href="#i-grid"/></svg>Leading digits vs Benford</h3>
+                <span class="chip"><i></i>Benford’s law</span>
+              </div>
+              <div class="bf" id="fxBenford"></div>
+              <div class="bf-legend"><span><i class="obs"></i>Observed</span><span><i class="exp"></i>Expected</span></div>
+              <p class="muted small" style="margin-top:12px">In real ledgers a leading 1 shows up about 30% of the time and a leading 9 under 5%. Digits that break that pattern are worth a second look.</p>
+            </section>
+
+            <section class="card">
+              <div class="card-head"><h3><svg class="ico"><use href="#i-bolt"/></svg>Amount patterns</h3></div>
+              <ul class="fx-list" id="fxAmounts"></ul>
+            </section>
+          </div>
+        </div>
+
+        <!-- Financial Statement Analytics -->
+        <div class="ftab" id="panelFSA" role="tabpanel" aria-labelledby="tabFSA" hidden>
+          <div class="fx-engine">
+            <div class="fx-engine-main">
+              <span class="fx-model"><svg class="ico"><use href="#i-cpu"/></svg>fin-analyzer-v1 · LLM</span>
+              <p>Analyzes financial statements for anomalies, irregular patterns, and cross-client inconsistencies.</p>
+            </div>
+            <button type="button" class="btn dark sm" id="fsRun"><svg class="ico"><use href="#i-sync"/></svg><span>Re-run analysis</span></button>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><small>Statements analyzed</small><strong id="fsDocs">0</strong><span>In the register</span></div>
+            <div class="stat red"><small>Anomalies flagged</small><strong id="fsFlagged">0</strong><span>Below threshold</span></div>
+            <div class="stat amber"><small>Highest variance</small><strong id="fsVariance">0</strong><span>Largest deviation</span></div>
+            <div class="stat"><small>Clean statements</small><strong id="fsClean">0</strong><span>No anomalies detected</span></div>
+          </div>
+
+          <section class="card" style="margin-bottom:22px">
+            <div class="toolbar">
+              <h3>Anomaly reports</h3>
+              <div class="filters">
+                <select class="select" id="fsFilter" aria-label="Filter anomaly reports">
+                  <option value="all">All reports</option>
+                  <option value="flagged">Flagged only</option>
+                  <option value="fake">Likely fabricated</option>
+                  <option value="clear">Clear</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap scope">
+              <table>
+                <thead><tr><th>Statement</th><th>Client</th><th>Anomaly type</th><th>Variance</th><th>Authenticity</th><th></th></tr></thead>
+                <tbody id="fsaRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>No anomalies fit this filter.</div>
+          </section>
+
+          <section class="card" id="fsaSummaryCard">
+            <div class="card-head">
+              <h3><svg class="ico"><use href="#i-file"/></svg>Summary report</h3>
+              <button type="button" class="btn sm ghost" id="fsSummaryCsv"><svg class="ico"><use href="#i-download"/></svg>Export summary</button>
+            </div>
+            <div id="fsaSummary"></div>
+          </section>
+        </div>
       </div>
 
       <!-- ===================== DEADLINES ===================== -->
@@ -471,14 +584,19 @@
 </div>
 
 <!-- Receipt scanner -->
-<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a receipt" hidden>
+<div class="scanner" id="scanner" role="dialog" aria-modal="true" aria-label="Scan a document" hidden>
   <video class="scan-video" id="scanVideo" playsinline muted autoplay hidden></video>
   <div class="scan-bg" aria-hidden="true"></div>
 
   <div class="scan-top">
     <button type="button" class="scan-circle" id="scanClose" aria-label="Close scanner"><svg class="ico"><use href="#i-x"/></svg></button>
-    <div class="scan-hint">Snap a receipt or invoice</div>
+    <div class="scan-hint" id="scanHint">Snap a receipt or invoice</div>
     <button type="button" class="scan-circle" id="scanFlash" aria-label="Toggle flash" aria-pressed="false"><svg class="ico"><use href="#i-bolt"/></svg></button>
+  </div>
+
+  <div class="scan-mode" role="group" aria-label="What are you scanning?">
+    <button type="button" class="scan-mode-btn on" id="scanKindReceipt" aria-pressed="true">Receipt</button>
+    <button type="button" class="scan-mode-btn" id="scanKindStatement" aria-pressed="false">Financial statement</button>
   </div>
 
   <div class="vf-wrap">
@@ -499,9 +617,13 @@
     <div class="sheet-row">
       <div class="thumb" id="scanThumb"><svg class="ico"><use href="#i-scan"/></svg></div>
       <div>
-        <h3>Photo taken</h3>
-        <p>Nice shot. Type in the details next, and the photo stays with the receipt.</p>
+        <h3 id="scanSheetTitle">Photo taken</h3>
+        <p id="scanSheetText">Nice shot. Type in the details next, and the photo stays with the receipt.</p>
       </div>
+    </div>
+    <div class="field" id="scanClientField" hidden>
+      <label for="scanClient">Client</label>
+      <select class="select" id="scanClient"></select>
     </div>
     <div class="btn-row">
       <button type="button" class="btn primary" id="scanUse">Use this photo</button>
@@ -528,7 +650,8 @@
 
   var KEYS = {
     clients: 'dcm_staff_clients', receipts: 'dcm_staff_receipts', docs: 'dcm_staff_docs',
-    deadlines: 'dcm_staff_deadlines', alerts: 'dcm_staff_alerts', prefs: 'dcm_staff_prefs', scan: 'dcm_staff_scan', files: 'dcm_staff_files'
+    deadlines: 'dcm_staff_deadlines', alerts: 'dcm_staff_alerts', prefs: 'dcm_staff_prefs', scan: 'dcm_staff_scan', files: 'dcm_staff_files',
+    statements: 'dcm_staff_statements'
   };
 
   /* ---------- Sample data ---------- */
@@ -545,14 +668,22 @@
       { id: 'c7', name: 'Client D',         type: 'Bookkeeping',          status: 'Completed',       score: 41, anomalies: 'Ghost vendor' }
     ],
     receipts: [
-      { id: 'r1', client: 'c4', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XYZ-0101', date: '2026-10-10', amt: 50000, file: '' },
-      { id: 'r2', client: 'c5', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-5521',  date: '2026-10-11', amt: 48500, file: '' },
-      { id: 'r3', client: 'c6', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0090',  date: '2026-10-12', amt: 51200, file: '' },
-      { id: 'r4', client: 'c7', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0077',  date: '2026-10-13', amt: 49900, file: '' },
-      { id: 'r5', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-09-20', amt: 12500, file: '' },
-      { id: 'r6', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-10-15', amt: 12500, file: '' },
-      { id: 'r7', client: 'c2', vendor: 'Meralco',        tin: '000-111-222', invoice: 'ML-8841', date: '2026-10-12', amt: 8200, file: '' },
-      { id: 'r8', client: 'c1', vendor: 'Globe Business', tin: '333-444-555', invoice: 'GB-2210', date: '2026-10-08', amt: 3450, file: '' }
+      { id: 'r1', client: 'c4', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XYZ-0101', date: '2026-10-10', amt: 50000, file: '',
+        doc: { name: 'XYZ TRADING CORPORATION', tin: '123-456-789', total: 50000, lines: [42000, 8000], date: '2026-10-10', layout: 'T-07', hash: '' } },
+      { id: 'r2', client: 'c5', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-5521',  date: '2026-10-11', amt: 48500, file: '',
+        doc: { name: 'XYZ Trading', tin: '123-456-798', total: 48500, lines: [30000, 18500], date: '2026-10-11', layout: 'T-07', hash: '' } },
+      { id: 'r3', client: 'c6', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0090',  date: '2026-10-12', amt: 51200, file: '',
+        doc: { name: 'XYZ Trading', tin: '123-456-789', total: 51200, lines: [40000, 10000], date: '2026-10-12', layout: 'T-07', hash: '' } },
+      { id: 'r4', client: 'c7', vendor: 'XYZ Trading', tin: '123-456-789', invoice: 'XT-0077',  date: '2026-10-13', amt: 49900, file: '',
+        doc: { name: 'XYZ Trading', tin: '123-456-789', total: 49900, lines: [49900], date: '2026-09-30', layout: 'T-07', hash: '' } },
+      { id: 'r5', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-09-20', amt: 12500, file: '',
+        doc: { name: 'ABC Office Supplies', tin: '456-789-123', total: 12500, lines: [12500], date: '2026-09-20', layout: 'T-07', hash: 'a1b2c3' } },
+      { id: 'r6', client: 'c4', vendor: 'ABC Office Supplies', tin: '456-789-123', invoice: 'INV-2026-004', date: '2026-10-15', amt: 12500, file: '',
+        doc: { name: 'ABC Office Supplies', tin: '456-789-123', total: 12500, lines: [12500], date: '2026-10-15', layout: 'T-07', hash: 'a1b2c3' } },
+      { id: 'r7', client: 'c2', vendor: 'Meralco',        tin: '000-111-222', invoice: 'ML-8841', date: '2026-10-12', amt: 8200, file: '',
+        doc: { name: 'Meralco', tin: '000-111-222', total: 8200, lines: [7800, 400], date: '2026-10-12', layout: 'T-02', hash: '' } },
+      { id: 'r8', client: 'c1', vendor: 'Globe Business', tin: '333-444-555', invoice: 'GB-2210', date: '2026-10-08', amt: 3450, file: '',
+        doc: { name: 'Globe Business', tin: '333-444-555', total: 3450, lines: [3000, 450], date: '2026-10-08', layout: 'T-11', hash: '' } }
     ],
     docs: [
       { id: 'q1', client: 'c4', what: 'Q3 Receipts',      status: 'overdue',  note: 'Overdue 3 days', reminded: false },
@@ -568,12 +699,21 @@
       { id: 'd5', client: 'c3', task: 'Deliver final consultancy report', due: '2026-10-20', done: true }
     ],
     alerts: {},
+    statements: [],
     prefs: { name: '', high: 75, med: 50, nFraud: true, nDocs: true },
     scan: '',
     files: { folders: [], files: [] }
   };
   var S = {};
-  function loadAll() { Object.keys(DEF).forEach(function (k) { S[k] = store.get(KEYS[k], JSON.parse(JSON.stringify(DEF[k]))); }); }
+  function loadAll() {
+    Object.keys(DEF).forEach(function (k) { S[k] = store.get(KEYS[k], JSON.parse(JSON.stringify(DEF[k]))); });
+    /* receipts saved by an earlier version have no extracted document fields yet */
+    (S.receipts || []).forEach(function (r) {
+      if (r.doc) return;
+      var base = DEF.receipts.filter(function (d) { return d.id === r.id; })[0];
+      if (base && base.doc) r.doc = JSON.parse(JSON.stringify(base.doc));
+    });
+  }
   function save(k) { store.set(KEYS[k], S[k]); }
 
   /* ---------- Helpers ---------- */
@@ -637,20 +777,52 @@
       });
     return { flags: flags, alerts: alerts };
   }
+
+  function fsaAnalyze(r) {
+    var anomalies = [];
+    if (r.tin && r.doc && r.doc.tin !== r.tin) {
+      anomalies.push('TIN mismatch: doc says ' + r.doc.tin + ', form says ' + r.tin);
+    }
+    if (r.doc && r.doc.lines) {
+      var total = r.doc.lines.reduce(function (a, b) { return a + b; }, 0);
+      if (total !== r.amt) {
+        anomalies.push('Line items sum to ₱' + total + ', but stated amount is ₱' + r.amt);
+      }
+    }
+    if (r.amt >= 50000 && r.amt % 10000 === 0) {
+      anomalies.push('Round-number total ≥ ₱50,000 may need additional approval');
+    }
+    return anomalies.length > 0 ? anomalies.join('. ') + '.' : '';
+  }
   function astatus(a) { return S.alerts[a.id] || 'open'; }
 
   function alertHTML(a, actions) {
-    var st = astatus(a), body, cls = 'alert';
+    var st = astatus(a), body, cls = 'alert', reportBtn = '';
     if (a.type === 'ghost') {
       var names = a.g.clients.map(cname).join(', ');
       body = '<h4>' + ico('circle-alert') + '"Ghost Vendor" Detected</h4>' +
         '<p>The vendor <strong>' + esc(a.g.vendor) + '</strong> (TIN: ' + esc(a.g.tin) + ') is appearing across <strong>' + a.g.clients.length + ' different clients</strong>.</p>' +
         '<span class="tagline">Flagged in: ' + esc(names) + '</span>';
-    } else {
+    } else if (a.type === 'dup') {
       cls += ' warn';
       body = '<h4>' + ico('copy') + 'Duplicate Invoice Detected</h4>' +
         '<p>Invoice <strong>#' + esc(a.r.invoice) + '</strong> recorded for ' + esc(cname(a.r.client)) + ' matches an earlier invoice from the same client.</p>' +
         '<span class="tagline">Vendor: ' + esc(a.r.vendor) + ' | Amount: ' + peso(a.r.amt) + '</span>';
+    } else if (a.type === 'fx') {
+      var fx = a.x, fr = fx.r;
+      var labels = fx.sigs.map(function (s) { return s.label; });
+      cls += fx.score >= 40 ? ' warn' : '';
+      body = '<h4>' + ico('file') + 'Document flagged for review</h4>' +
+        '<p><strong>' + esc(fr.vendor) + '</strong> (invoice #' + esc(fr.invoice) + ' dated ' + esc(fmtDate(fr.date)) + ') for ' + esc(cname(fr.client)) + ' scored <strong>' + fx.score + '% authenticity</strong> after ' + labels.length + ' signal' + (labels.length === 1 ? '' : 's') + '.</p>' +
+        '<span class="tagline">' + esc(labels.slice(0, 3).join(' · ')) + (labels.length > 3 ? ' +' + (labels.length - 3) + ' more' : '') + '</span>';
+      reportBtn = '<button type="button" class="btn sm ghost" data-fx="' + esc(fr.id) + '">Open document report</button>';
+    } else if (a.type === 'fsa') {
+      var sx = a.x, issues = fsaFindings(sx);
+      cls += sx.verdict === 'review' ? ' warn' : '';
+      body = '<h4>' + ico('file') + 'Financial statement flagged</h4>' +
+        '<p><strong>' + esc(fsaStatementName(sx)) + '</strong> for ' + esc(sx.client) + ' scored <strong>' + (parseFloat(sx.authenticity) || 0) + '% authenticity</strong> with ' + issues.length + ' finding' + (issues.length === 1 ? '' : 's') + '.</p>' +
+        '<span class="tagline">' + esc(issues.slice(0, 3).join(' · ')) + (issues.length > 3 ? ' +' + (issues.length - 3) + ' more' : '') + '</span>';
+      reportBtn = '<button type="button" class="btn sm ghost" data-fsa-report="' + esc(sx.id) + '">Open statement report</button>';
     }
     if (st === 'resolved') cls += ' resolved';
     var foot = '';
@@ -660,15 +832,14 @@
       if (st === 'open') btns = '<button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="review">Start reviewing</button><button type="button" class="btn sm dark" data-alert="' + id + '" data-act="resolve">Mark as resolved</button>';
       if (st === 'review') btns = '<button type="button" class="btn sm dark" data-alert="' + id + '" data-act="resolve">Mark as resolved</button><button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="reopen">Reopen</button>';
       if (st === 'resolved') btns = '<button type="button" class="btn sm ghost" data-alert="' + id + '" data-act="reopen">Reopen</button>';
-      foot = '<div class="alert-actions">' + badge + btns + '</div>';
+      foot = '<div class="alert-actions">' + badge + reportBtn + btns + '</div>';
     }
     return '<div class="' + cls + (actions ? ' filterable' : '') + '" data-status="' + st + '">' + body + foot + '</div>';
   }
 
   /* ---------- Render: dashboard ---------- */
   function renderDashboard() {
-    var an = analyze();
-    var active = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; });
+    var active = allAlerts().filter(function (a) { return astatus(a) !== 'resolved'; });
     $('#openCount').textContent = active.length + ' open';
     $('#dashAlerts').innerHTML = active.length
       ? active.slice(0, 3).map(function (a) { return alertHTML(a, false); }).join('')
@@ -709,7 +880,7 @@
   }
   function fillSelects() {
     var opts = S.clients.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
-    ['#rClient', '#dClient'].forEach(function (id) { var el = $(id), v = el.value; el.innerHTML = opts; if (v) el.value = v; });
+    ['#rClient', '#dClient', '#scanClient'].forEach(function (id) { var el = $(id), v = el.value; el.innerHTML = opts; if (v) el.value = v; });
     var sf = $('#statusFilter'), cur = sf.value;
     sf.innerHTML = '<option value="all">All statuses</option>' + STATUSES.map(function (s) { return '<option>' + s + '</option>'; }).join('');
     sf.value = cur || 'all';
@@ -729,22 +900,36 @@
         '<td><div class="client-name">' + esc(r.vendor) + '</div><div class="cell-sub">TIN ' + esc(r.tin) + '</div></td>' +
         '<td>' + esc(r.invoice) + (r.file ? '<div class="cell-sub">' + esc(r.file) + '</div>' : '') + '</td>' +
         '<td class="amount">' + peso(r.amt) + '</td><td>' + status + '</td>' +
-        '<td class="right"><button type="button" class="icon-btn" data-del-receipt="' + esc(r.id) + '" aria-label="Delete receipt">' + ico('trash') + '</button></td></tr>';
+        '<td class="right"><button type="button" class="icon-btn" data-del-receipt="' + esc(r.id) + '" aria-label="Delete receipt">' + ico('trash') + '</button>' + '<button type="button" class="icon-btn" data-fsa-analyze="' + esc(r.id) + '">FS</button></td></tr>';
     }).join('');
   }
 
-  /* ---------- Render: fraud ---------- */
+  /* ---------- Render: alerts (all sources) ---------- */
+  function allAlerts() {
+    var list = analyze().alerts.slice();
+    fxAll().forEach(function (x) {
+      if (x.verdict !== 'clear') list.push({ id: 'fx:' + x.r.id, type: 'fx', x: x });
+    });
+    fsaAll().forEach(function (x) {
+      if (x.verdict !== 'clear') list.push({ id: 'fsa:' + x.id, type: 'fsa', x: x });
+    });
+    return list;
+  }
+
   function renderFraud() {
-    var an = analyze();
-    var ghost = an.alerts.filter(function (a) { return a.type === 'ghost'; }).length;
-    var dup = an.alerts.filter(function (a) { return a.type === 'dup'; }).length;
-    var open = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; }).length;
+    var all = allAlerts();
+    var cross = all.filter(function (a) { return a.type === 'ghost' || a.type === 'dup'; }).length;
+    var docs = all.filter(function (a) { return a.type === 'fx'; }).length;
+    var stmts = all.filter(function (a) { return a.type === 'fsa'; }).length;
+    var open = all.filter(function (a) { return astatus(a) !== 'resolved'; }).length;
     var high = S.clients.filter(function (c) { return level(c.score) === 'high'; }).length;
-    $('#stOpen').textContent = open; $('#stGhost').textContent = ghost; $('#stDup').textContent = dup; $('#stHigh').textContent = high;
+    $('#stOpen').textContent = open; $('#stCross').textContent = cross; $('#stFx').textContent = docs; $('#stFsa').textContent = stmts; $('#stHigh').textContent = high;
     $('#stHighNote').textContent = 'Score ' + S.prefs.high + '% or more';
 
     var f = $('#alertFilter').value;
-    var list = an.alerts.filter(function (a) { return f === 'all' || astatus(a) === f; });
+    var rank = { open: 0, review: 1, resolved: 2 };
+    var list = all.filter(function (a) { return f === 'all' || astatus(a) === f; })
+      .sort(function (a, b) { return rank[astatus(a)] - rank[astatus(b)]; });
     $('#fraudList').innerHTML = list.map(function (a) { return alertHTML(a, true); }).join('');
 
     $('#riskBars').innerHTML = S.clients.slice().sort(function (a, b) { return b.score - a.score; }).map(function (c) {
@@ -754,6 +939,467 @@
 
     var badge = $('#navAlerts');
     badge.textContent = open; badge.hidden = open === 0;
+
+    var tab = $('#tabAlertCount');
+    tab.textContent = open; tab.classList.toggle('hot', open > 0);
+  }
+
+  /* ---------- Document forensics (LLM over the receipt register) ---------- */
+  var FX_LIMIT = 50000;            /* purchases at or above this need a second signature */
+  var FX_W = { name: 12, tin: 22, lines: 26, total: 20, date: 16, template: 24, image: 28, under: 20, round: 6, repeat: 15 };
+  var FX_LABEL = { fake: 'Likely fabricated', review: 'Needs review', clear: 'Clear' };
+  var FX_FIELDS = ['name', 'tin', 'total', 'date'];
+  var BF_EXPECT = [30.1, 17.6, 12.5, 9.7, 7.9, 6.7, 5.8, 5.1, 4.6];
+
+  function fxTone(score) { return score >= 70 ? 'low' : score >= 40 ? 'medium' : 'high'; }
+
+  /* page layouts shared by documents filed under more than one supplier TIN */
+  function fxShared() {
+    var map = {};
+    S.receipts.forEach(function (r) {
+      if (!r.doc || !r.doc.layout) return;
+      var L = map[r.doc.layout] || (map[r.doc.layout] = { ids: [], tins: [] });
+      L.ids.push(r.id);
+      if (L.tins.indexOf(norm(r.tin)) < 0) L.tins.push(norm(r.tin));
+    });
+    var out = {};
+    Object.keys(map).forEach(function (k) { if (map[k].tins.length > 1) out[k] = map[k]; });
+    return out;
+  }
+
+  function fxReport(r, shared) {
+    var d = r.doc, sigs = [], amt = Number(r.amt) || 0;
+    function add(code, label, sev, detail) { sigs.push({ code: code, label: label, sev: sev, w: FX_W[code], detail: detail }); }
+
+    if (d) {
+      if (d.name && norm(d.name) !== norm(r.vendor))
+        add('name', 'Vendor name differs', 'med', 'The name printed on the document reads “' + d.name + '”, while the register has “' + r.vendor + '”.');
+      if (d.tin && norm(d.tin) !== norm(r.tin))
+        add('tin', 'TIN differs', 'high', 'The TIN on the document (' + d.tin + ') does not match the TIN recorded for this vendor (' + r.tin + ').');
+      if (d.lines && d.lines.length && d.total != null) {
+        var sum = d.lines.reduce(function (a, b) { return a + Number(b); }, 0);
+        if (Math.abs(sum - Number(d.total)) > 0.5)
+          add('lines', 'Line items don’t add up', 'high', 'The line items total ' + peso(sum) + ' but the document states ' + peso(d.total) + '.');
+      }
+      if (d.total != null && Math.abs(Number(d.total) - amt) > 0.5)
+        add('total', 'Total differs from register', 'high', 'The document shows ' + peso(d.total) + ' but ' + peso(amt) + ' was keyed into the register.');
+      if (d.date && d.date !== r.date) {
+        var gap = Math.round((pd(r.date) - pd(d.date)) / 86400000);
+        add('date', 'Document date differs', 'med', 'The document is dated ' + fmtDate(d.date) + ', ' + Math.abs(gap) + ' day' + (Math.abs(gap) === 1 ? '' : 's') + (gap > 0 ? ' before' : ' after') + ' it was recorded on ' + fmtDate(r.date) + '.');
+      }
+      var L = d.layout ? shared[d.layout] : null;
+      if (L) {
+        var others = L.ids.length - 1, otherTins = L.tins.length - 1;
+        add('template', 'Shared layout', 'high', 'The page layout matches ' + others + ' other document' + (others === 1 ? '' : 's') + ' on file, ' + otherTins + ' of them filed under a different supplier TIN.');
+      }
+      if (d.hash) {
+        var twin = S.receipts.filter(function (x) { return x.id !== r.id && x.doc && x.doc.hash === d.hash; })[0];
+        if (twin) add('image', 'Same scan as another receipt', 'high', 'The scan is identical to invoice ' + twin.invoice + ' filed for ' + cname(twin.client) + ' on ' + fmtDate(twin.date) + '.');
+      }
+    }
+
+    if (amt >= 10000 && amt % 1000 === 0)
+      add('round', 'Round-number total', 'low', 'The total is exactly ' + peso(amt) + ', which is unusual for goods actually received.');
+    if (amt < FX_LIMIT && amt >= FX_LIMIT * 0.95)
+      add('under', 'Just under the approval limit', 'high', 'The total sits ' + peso(FX_LIMIT - amt) + ' below ' + peso(FX_LIMIT) + ', the amount that needs a second signature.');
+    var same = S.receipts.filter(function (x) { return x.id !== r.id && Number(x.amt) === amt && norm(x.tin) !== norm(r.tin); });
+    if (same.length)
+      add('repeat', 'Same amount, another supplier', 'med', 'The amount ' + peso(amt) + ' also appears on ' + same.length + ' document' + (same.length === 1 ? '' : 's') + ' filed under a different TIN.');
+
+    var score = 100;
+    sigs.forEach(function (s) { score -= s.w; });
+    score = Math.max(5, score);
+    var highs = sigs.filter(function (s) { return s.sev === 'high'; }).length;
+    return {
+      r: r, sigs: sigs, score: score,
+      conf: sigs.length ? Math.min(96, 58 + sigs.length * 7 + highs * 9) : 0,
+      verdict: score >= 70 ? 'clear' : score >= 40 ? 'review' : 'fake'
+    };
+  }
+  function fxAll() { var shared = fxShared(); return S.receipts.map(function (r) { return fxReport(r, shared); }); }
+
+  function fxNarrative(x) {
+    var r = x.r, who = cname(r.client);
+    if (!x.sigs.length) {
+      return (r.doc
+        ? 'We read the vendor name, TIN, date and total on this document and compared them with the register and every other document on file. Nothing conflicts.'
+        : 'This receipt was keyed in by hand, so there is no image to read. The amount and the rest of the register were still checked, and nothing conflicts.')
+        + ' The ' + peso(r.amt) + ' from ' + r.vendor + ' for ' + who + ' looks like an ordinary expense.';
+    }
+    var open = (r.doc
+      ? 'We extracted the vendor name, TIN, date and total from this document, then compared them with the register and the other documents on file.'
+      : 'This receipt was keyed in by hand, so only the amount and the register could be checked.') +
+      ' ' + x.sigs.length + ' signal' + (x.sigs.length === 1 ? '' : 's') + ' came back for ' + who + '.';
+    return open + ' ' + x.sigs.map(function (s) { return s.detail; }).join(' ');
+  }
+  function fxRecommend(x) {
+    if (!x.sigs.length) return 'No action needed beyond normal review.';
+    var has = function (c) { return x.sigs.some(function (s) { return s.code === c; }); };
+    if (has('image')) return 'Ask the client for the supplier’s own copy of this receipt. An identical scan is already on file, so the same expense cannot be claimed twice.';
+    if (has('tin') || has('template')) return 'Request the supplier’s BIR-registered details and check the TIN before posting. If the client cannot produce a matching official receipt, treat the expense as unsupported.';
+    if (has('lines') || has('total') || has('date') || has('name')) return 'Ask the client for the original document so the fields can be compared by hand. Differences like these usually mean the receipt was re-issued or amended.';
+    if (has('under')) return 'Ask whether this purchase was split to stay under the approval limit, and get the second signature on file.';
+    return 'Flag it for a quick look at the next review.';
+  }
+
+  function fxRowHTML(x) {
+    var r = x.r, d = r.doc || {}, tone = fxTone(x.score);
+    var read = r.doc ? FX_FIELDS.filter(function (k) { return d[k] != null && d[k] !== ''; }).length : 0;
+    var chips = x.sigs.length
+      ? x.sigs.slice(0, 3).map(function (s) { return '<span class="sig sev-' + s.sev + '">' + esc(s.label) + '</span>'; }).join('') +
+        (x.sigs.length > 3 ? '<span class="sig">+' + (x.sigs.length - 3) + '</span>' : '')
+      : '<span class="fx-clear">No signals</span>';
+    return '<tr class="filterable">' +
+      '<td><div class="fx-doc"><span class="fx-tile ' + (tone === 'low' ? '' : tone === 'medium' ? 'warn' : 'bad') + '">' + ico('file') + '</span><div>' +
+        '<div class="fx-name">' + esc(r.vendor) + '</div>' +
+        '<div class="fx-sub">' + esc(r.invoice) + ' · ' + esc(fmtDate(r.date)) + '</div></div></div></td>' +
+      '<td>' + esc(cname(r.client)) + '<div class="fx-sub">TIN ' + esc(r.tin) + '</div></td>' +
+      '<td>' + (r.doc ? '<span class="fx-sub">' + read + ' of 4 fields</span>' : '<span class="fx-sub">Not extracted</span>') + '</td>' +
+      '<td><div class="fx-sigs">' + chips + '</div></td>' +
+      '<td><div class="fx-score"><div class="fx-score-top">' + x.score + '%<small>' + FX_LABEL[x.verdict] + '</small></div>' +
+        '<div class="fx-meters"><i class="' + tone + '" style="width:' + x.score + '%"></i></div></div></td>' +
+      '<td class="right"><button type="button" class="btn sm ghost" data-fx="' + esc(r.id) + '">Open report</button></td></tr>';
+  }
+
+  function benford() {
+    var used = 0, cnt = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    S.receipts.forEach(function (r) {
+      var f = String(Math.round(Math.abs(Number(r.amt) || 0))).replace(/^0+/, '').charAt(0);
+      if (f >= '1' && f <= '9') { cnt[+f - 1]++; used++; }
+    });
+    return BF_EXPECT.map(function (exp, i) {
+      return { digit: i + 1, count: cnt[i], exp: exp, obs: used ? cnt[i] / used * 100 : 0 };
+    });
+  }
+  function renderBenford() {
+    var rows = benford(), peak = 1;
+    rows.forEach(function (d) { peak = Math.max(peak, d.obs, d.exp); });
+    $('#fxBenford').innerHTML = rows.map(function (d) {
+      var hot = d.count >= 2 && d.obs > d.exp * 1.6;
+      return '<div class="bf' + (hot ? ' on' : '') + '">' +
+        '<div class="bf-bar" aria-hidden="true"><i style="height:' + (d.obs / peak * 100) + '%"></i><span class="bf-tick" style="bottom:' + (d.exp / peak * 100) + '%"></span></div>' +
+        '<b>' + d.digit + '</b><small>' + d.count + '</small></div>';
+    }).join('');
+  }
+  function renderAmounts(docs) {
+    var hot = benford().filter(function (d) { return d.count >= 2 && d.obs > d.exp * 1.6; });
+    var digits = hot.map(function (d) { return d.digit; });
+    var list = digits.length > 1 ? digits.slice(0, -1).join(', ') + ' and ' + digits[digits.length - 1] : String(digits[0]);
+    var pick = function (code) { return docs.filter(function (x) { return x.sigs.some(function (s) { return s.code === code; }); }); };
+    var under = pick('under'), round = pick('round'), repeat = pick('repeat');
+    var items = [
+      { ok: !under.length, t: 'Under the approval limit',
+        d: under.length
+          ? under.map(function (x) { return peso(x.r.amt) + ' (' + x.r.invoice + ')'; }).join(', ') + ' sit within 5% of ' + peso(FX_LIMIT) + ', where a second signature is required.'
+          : 'No document sits just under the ' + peso(FX_LIMIT) + ' approval limit.' },
+      { ok: !round.length, t: 'Round-number totals',
+        d: round.length
+          ? round.length + ' of ' + docs.length + ' totals end in 000 — ' + round.map(function (x) { return peso(x.r.amt); }).join(', ') + '.'
+          : 'No total is a round figure.' },
+      { ok: !hot.length, t: 'Leading digits',
+        d: hot.length
+          ? 'Digit' + (hot.length > 1 ? 's ' : ' ') + list + ' show' + (hot.length > 1 ? '' : 's') + ' up more often than Benford predicts — ' + hot.map(function (d) { return d.obs.toFixed(0) + '% observed against ' + d.exp + '% expected'; }).join('; ') + '.'
+          : 'Leading digits follow Benford closely enough for ' + docs.length + ' documents.' },
+      { ok: !repeat.length, t: 'Repeated amounts',
+        d: repeat.length
+          ? repeat.length + ' document' + (repeat.length === 1 ? '' : 's') + ' repeat an amount that also appears under a different TIN.'
+          : 'No amount is repeated under a different TIN.' }
+    ];
+    $('#fxAmounts').innerHTML = items.map(function (it) {
+      return '<li>' + ico(it.ok ? 'check' : 'circle-alert') + '<div><strong>' + esc(it.t) + '</strong><span>' + esc(it.d) + '</span></div></li>';
+    }).join('');
+  }
+
+  function renderForensics() {
+    var docs = fxAll();
+    var flagged = docs.filter(function (x) { return x.verdict !== 'clear'; });
+    $('#fxDocs').textContent = docs.length;
+    $('#fxFlagged').textContent = flagged.length;
+    $('#fxSignals').textContent = docs.reduce(function (n, x) { return n + x.sigs.length; }, 0);
+    $('#fxClusters').textContent = Object.keys(fxShared()).length;
+
+    var tab = $('#tabFxCount');
+    tab.textContent = flagged.length; tab.hidden = flagged.length === 0;
+    tab.classList.toggle('hot', flagged.length > 0);
+
+    var f = $('#fxFilter').value;
+    var list = docs.slice().sort(function (a, b) { return a.score - b.score; }).filter(function (x) {
+      return f === 'all' || (f === 'flagged' ? x.verdict !== 'clear' : x.verdict === f);
+    });
+    $('#fxRows').innerHTML = list.map(fxRowHTML).join('');
+    renderBenford(); renderAmounts(docs);
+  }
+
+  function fsaAll() {
+    var base = [
+      { id: 'a1', statement: 'Q3 2026 Financial Statement · Client A', client: 'Client A', type: 'Expense Spike', variance: '312%', authenticity: '34%', verdict: 'fake', llm: 'The 312% increase in Miscellaneous Expenses significantly exceeds typical operational variance. This pattern is consistent with hidden withdrawals or personal expenses being routed through the company accounts, a common tactic in fraud schemes where personal costs are disguised as business expenses.', rec: 'Request the client provide BIR-registered expense documentation and verify each Miscellaneous Expense entry before posting.', sigs: ['Expense Spike'] },
+      { id: 'a2', statement: 'Q3 2026 Financial Statement · Client B', client: 'Client B', type: 'Cash Variance', variance: '45%', authenticity: '40%', verdict: 'review', llm: 'Revenue growth of ₱500k without a corresponding increase in Cash suggests either channel stuffing (artificial inflation of sales to meet targets) or severe collection issues where receivables are not being converted to cash. Both indicate fundamental problems with revenue recognition and cash flow.', rec: 'Review revenue recognition policies and aging receivables schedule. Confirm all ₱500k in reported revenue has corresponding cash receipts. If channel stuffing is suspected, inspect sales contracts and dispatch documents for artificial volume inflation.', sigs: ['Cash Variance'] }
+    ];
+    var scanned = (S.statements || []).map(function (s) {
+      return {
+        id: s.id, statement: s.name, client: cname(s.client), type: s.type,
+        variance: s.variance, authenticity: s.authenticity + '%', verdict: s.verdict,
+        llm: s.llm, rec: s.rec, sigs: s.sigs || [], scanned: true, total: s.total, date: s.date
+      };
+    });
+    return scanned.concat(base);
+  }
+
+  function fsaStatementName(x) {
+    var suffix = ' · ' + x.client;
+    return x.statement.slice(-suffix.length) === suffix ? x.statement.slice(0, -suffix.length) : x.statement;
+  }
+
+  function fsaFindings(x) {
+    if (x.verdict === 'clear') return [];
+    if (x.scanned && x.sigs && x.sigs.length) {
+      return x.sigs.map(function (s) { return typeof s === 'string' ? s : s.label; });
+    }
+    return [x.type];
+  }
+
+  function fsaSummaryData(anomalies) {
+    var d = { total: anomalies.length, flagged: [], fake: 0, review: 0, clear: 0, findings: [], clients: [] };
+    anomalies.forEach(function (x) { if (x.verdict !== 'clear') d.flagged.push(x); });
+    d.flagged.forEach(function (x) {
+      if (x.verdict === 'fake') d.fake++;
+      else if (x.verdict === 'review') d.review++;
+    });
+    d.clear = d.total - d.flagged.length;
+
+    var fc = {};
+    d.flagged.forEach(function (x) {
+      fsaFindings(x).forEach(function (label) { fc[label] = (fc[label] || 0) + 1; });
+    });
+    d.findings = Object.keys(fc).map(function (label) { return { label: label, count: fc[label] }; })
+      .sort(function (a, b) { return b.count - a.count || a.label.localeCompare(b.label); });
+
+    var cc = {};
+    d.flagged.forEach(function (x) {
+      var c = cc[x.client] || (cc[x.client] = { name: x.client, count: 0, score: 100 });
+      c.count++;
+      c.score = Math.min(c.score, parseFloat(x.authenticity) || 0);
+    });
+    d.clients = Object.keys(cc).map(function (k) { return cc[k]; })
+      .sort(function (a, b) { return b.count - a.count || a.score - b.score; });
+    return d;
+  }
+
+  function renderFSASummary(anomalies) {
+    var box = $('#fsaSummary');
+    if (!box) return;
+    var d = fsaSummaryData(anomalies);
+    var pct = d.total ? Math.round((d.flagged.length / d.total) * 100) : 0;
+    var tone = d.fake ? 'high' : d.review ? 'medium' : 'low';
+    var lead;
+
+    if (!d.total) {
+      lead = 'No financial statements are in the register yet. Scan a statement to start building the summary.';
+    } else if (!d.flagged.length) {
+      lead = 'All ' + d.total + ' statements in the register are clear. No anomalies were found in the latest analysis.';
+    } else {
+      var mix = [];
+      if (d.fake) mix.push(d.fake + ' likely fabricated');
+      if (d.review) mix.push(d.review + ' for review');
+      lead = d.flagged.length + ' of ' + d.total + ' statements need attention (' + mix.join(', ') + ').';
+      if (d.findings.length) {
+        lead += ' The most common finding is ' + d.findings[0].label + ' (' + d.findings[0].count + ' statement' + (d.findings[0].count === 1 ? '' : 's') + ').';
+      }
+      if (d.clients.length) {
+        var top = d.clients[0];
+        lead += ' ' + top.name + ' has the highest exposure, with ' + top.count + ' flagged statement' + (top.count === 1 ? '' : 's') + ' and a lowest authenticity score of ' + top.score + '%.';
+      }
+    }
+
+    var rec;
+    if (!d.flagged.length) {
+      rec = 'No follow-up is needed. Keep the register current and re-run the analysis after the next batch of statements is scanned.';
+    } else if (d.fake) {
+      rec = 'Request the supporting schedules and ledger detail for the ' + d.fake + ' likely fabricated statement' + (d.fake === 1 ? '' : 's') + ', starting with ' + d.clients[0].name + '. Hold approvals until the figures are explained.';
+    } else {
+      rec = 'Send the ' + d.review + ' review item' + (d.review === 1 ? '' : 's') + ' to the engagement team, starting with ' + d.clients[0].name + ', and confirm the figures against the client ledger before posting.';
+    }
+
+    var findingsHTML = d.findings.length
+      ? d.findings.slice(0, 4).map(function (f) {
+          return '<li><span>' + esc(f.label) + '</span><b>' + f.count + '</b></li>';
+        }).join('')
+      : '<li class="is-empty">No findings in this register.</li>';
+    var clientsHTML = d.clients.length
+      ? d.clients.slice(0, 4).map(function (c) {
+          return '<li><span>' + esc(c.name) + '<small>' + c.count + ' flagged statement' + (c.count === 1 ? '' : 's') + ' · ' + c.score + '% lowest authenticity</small></span><b>' + c.count + '</b></li>';
+        }).join('')
+      : '<li class="is-empty">No clients need follow-up.</li>';
+    var share = function (n) { return d.total ? (n / d.total) * 100 : 0; };
+
+    box.innerHTML =
+      '<div class="fsa-report-top">' +
+        '<div>' +
+          '<span class="fsa-kicker">Financial statement register · generated ' + esc(nowStamp()) + '</span>' +
+          '<p class="fsa-lead">' + esc(lead) + '</p>' +
+        '</div>' +
+        '<div class="fsa-score">' +
+          '<div class="fx-verdict ' + tone + '">' + pct + '%<small>need attention</small></div>' +
+          '<span class="badge ' + (d.fake ? 'overdue' : d.review ? 'pending' : 'received') + '">' + (d.fake ? 'Elevated risk' : d.review ? 'Review needed' : 'Portfolio clear') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fsa-mix">' +
+        '<div class="fsa-mix-item bad"><small>Likely fabricated</small><strong>' + d.fake + '</strong></div>' +
+        '<div class="fsa-mix-item warn"><small>For review</small><strong>' + d.review + '</strong></div>' +
+        '<div class="fsa-mix-item ok"><small>Clear</small><strong>' + d.clear + '</strong></div>' +
+      '</div>' +
+      '<div class="fsa-bar" aria-hidden="true"><i class="bad" style="width:' + share(d.fake) + '%"></i><i class="warn" style="width:' + share(d.review) + '%"></i><i class="ok" style="width:' + share(d.clear) + '%"></i></div>' +
+      '<div class="fsa-cols">' +
+        '<div><h4>Most common findings</h4><ul class="fsa-list">' + findingsHTML + '</ul></div>' +
+        '<div><h4>Clients to follow up</h4><ul class="fsa-list">' + clientsHTML + '</ul></div>' +
+      '</div>' +
+      '<div class="fx-rec"><h4>' + ico('shield') + 'Recommended action</h4><p>' + esc(rec) + '</p></div>';
+  }
+
+  function exportFSASummary() {
+    var anomalies = fsaAll();
+    var d = fsaSummaryData(anomalies);
+    var rows = [
+      ['DCM & Co. - Financial Statement Analytics summary'],
+      ['Generated', nowStamp()],
+      ['Statements analyzed', d.total],
+      ['Need attention', d.flagged.length],
+      ['Likely fabricated', d.fake],
+      ['For review', d.review],
+      ['Clear', d.clear],
+      [],
+      ['Most common findings', 'Count']
+    ];
+    d.findings.forEach(function (f) { rows.push([f.label, f.count]); });
+    rows.push([], ['Clients to follow up', 'Flagged statements', 'Lowest authenticity (%)']);
+    d.clients.forEach(function (c) { rows.push([c.name, c.count, c.score]); });
+    rows.push([], ['Statement', 'Client', 'Findings', 'Verdict', 'Authenticity (%)', 'Variance', 'Date']);
+    anomalies.forEach(function (x) {
+      rows.push([
+        x.statement, x.client, fsaFindings(x).join('; ') || 'None',
+        x.verdict === 'clear' ? 'Clear' : x.verdict === 'review' ? 'Review' : 'Fake',
+        parseFloat(x.authenticity) || 0, x.variance, x.date || ''
+      ]);
+    });
+    var file = 'dcm-financial-statement-summary-' + isoToday() + '.csv';
+    download(file, rows);
+    toast('Downloaded ' + file);
+  }
+
+  function renderFSA() {
+    var anomalies = fsaAll();
+    var flagged = anomalies.filter(function (x) { return x.verdict !== 'clear'; });
+    $('#fsDocs').textContent = anomalies.length;
+    $('#fsFlagged').textContent = flagged.length;
+    var variances = anomalies.map(function (x) { return parseFloat(x.variance) || 0; });
+    var topVariance = Math.max.apply(null, variances.concat([0]));
+    $('#fsVariance').textContent = topVariance ? topVariance + '%' : '—';
+    $('#fsClean').textContent = (anomalies.length - flagged.length) + '/' + anomalies.length;
+    var tab = $('#tabFSACount');
+    tab.textContent = flagged.length; tab.hidden = flagged.length === 0; tab.classList.toggle('hot', flagged.length > 0);
+
+    var f = $('#fsFilter').value;
+    var list = anomalies.filter(function (x) {
+      return f === 'all' || (f === 'flagged' ? x.verdict !== 'clear' : x.verdict === f);
+    });
+    $('#fsaRows').innerHTML = list.map(function (x) {
+      var score = parseFloat(x.authenticity) || 0;
+      var tone = x.verdict === 'clear' ? 'low' : score < 50 ? 'high' : 'medium';
+      var label = x.verdict === 'clear' ? 'Clear' : score < 50 ? 'Fake' : 'Review';
+      return '<tr class="filterable" data-fsa-report="' + esc(x.id) + '">' +
+        '<td>' + esc(x.statement) + '</td>' +
+        '<td>' + esc(x.client) + '</td>' +
+        '<td>' + esc(x.type) + '</td>' +
+        '<td>' + esc(x.variance) + '</td>' +
+        '<td><div class="risk ' + tone + '"><div class="risk-label"><span class="risk-dot"></span>' + label + ' (' + x.authenticity + ')</div><div class="meter"><i style="width:' + score + '%"></i></div></div></td>' +
+        '<td><button type="button" class="btn sm ghost" data-fsa-report="' + esc(x.id) + '">Open report</button></td>' +
+      '</tr>';
+    }).join('');
+    $('#fsaRows').parentNode.parentNode.hidden = list.length === 0 && f === 'all';
+    renderFSASummary(anomalies);
+  }
+
+  function fxModal(id) {
+    var x = fxAll().filter(function (d) { return d.r.id === id; })[0];
+    if (!x) return;
+    var r = x.r, tone = fxTone(x.score);
+    var sigs = x.sigs.length
+      ? '<div class="fx-sig-list">' + x.sigs.map(function (s) {
+          return '<div class="fx-sig ' + s.sev + '"><span class="dot"></span><div><strong>' + esc(s.label) + '</strong><span>' + esc(s.detail) + '</span></div><span class="fx-weight">−' + s.w + '</span></div>';
+        }).join('') + '</div>'
+      : '<div class="fx-sig-list"><div class="fx-sig low"><span class="dot"></span><div><strong>No signals</strong><span>Every extracted field matched the register and no amount pattern fired.</span></div><span class="fx-weight">0</span></div></div>';
+    openModal(r.vendor + ' · ' + r.invoice,
+      '<div class="fx-report-top"><div>' +
+        '<div class="fx-sub">' + esc(cname(r.client)) + ' · TIN ' + esc(r.tin) + ' · ' + esc(fmtDate(r.date)) + ' · ' + peso(r.amt) + '</div>' +
+        '<div class="fx-verdict ' + tone + '">' + x.score + '%<small>authenticity</small></div>' +
+      '</div><span class="badge ' + (x.verdict === 'clear' ? 'received' : x.verdict === 'review' ? 'pending' : 'overdue') + '">' + FX_LABEL[x.verdict] + '</span></div>' +
+      '<div class="fx-narr"><h4>' + ico('cpu') + 'What the model saw' + (x.conf ? ' · ' + x.conf + '% confidence' : '') + '</h4><p>' + esc(fxNarrative(x)) + '</p></div>' +
+      sigs +
+      '<div class="fx-rec"><h4>' + ico('shield') + 'Recommended next step</h4><p>' + esc(fxRecommend(x)) + '</p></div>' +
+      '<div class="btn-row" style="margin-top:0"><button type="button" class="btn sm ghost" data-fx-goto="' + esc(r.invoice) + '">View in receipt register</button><button type="button" class="btn sm dark" data-close>Close</button></div>');
+    $('.dialog', modal).classList.add('wide');
+  }
+
+  function setFTab(name) {
+    $$('.tab[data-ftab]').forEach(function (b) {
+      var on = b.dataset.ftab === name;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+    });
+    $('#panelAlerts').hidden = name !== 'alerts';
+    $('#panelForensics').hidden = name !== 'forensics';
+    $('#panelFSA').hidden = name !== 'fsa';
+    if (name === 'alerts') renderFraud();
+    if (name === 'forensics') renderForensics();
+    if (name === 'fsa') renderFSA();
+    applyFilter();
+  }
+
+  function fsaModal(id) {
+    var x = fsaAll().filter(function (d) { return d.id === id; })[0];
+    if (!x) return;
+    var score = parseFloat(x.authenticity) || 0;
+    var tone = x.verdict === 'clear' ? 'low' : score < 50 ? 'high' : 'medium';
+    var sigs = x.sigs.length
+      ? '<div class="fx-sig-list">' + x.sigs.map(function (s) {
+          return '<div class="fx-sig ' + s.sev + '"><span class="dot"></span><div><strong>' + esc(s.label) + '</strong><span>' + esc(s.detail) + '</span></div><span class="fx-weight">−' + s.w + '</span></div>';
+        }).join('') + '</div>'
+      : '<div class="fx-sig-list"><div class="fx-sig low"><span class="dot"></span><div><strong>No signals</strong><span>Every field matched the register and no pattern fired.</span></div><span class="fx-weight">0</span></div></div>';
+    openModal(x.statement,
+      '<div class="fx-report-top"><div>' +
+        '<div class="fx-sub">' + esc(x.client) + ' · ' + (x.scanned ? peso(x.total || 0) + ' total' + (x.date ? ' · ' + fmtDate(x.date) : '') : x.variance + ' variance') + '</div>' +
+        '<div class="fx-verdict ' + tone + '">' + score + '%<small>authenticity</small></div>' +
+      '</div><span class="badge ' + (x.verdict === 'clear' ? 'received' : x.verdict === 'review' ? 'pending' : 'overdue') + '">' + (x.verdict === 'clear' ? 'Clear' : x.verdict === 'review' ? 'Review' : 'Fake') + '</span></div>' +
+      '<div class="fx-narr"><h4>' + ico('cpu') + 'LLM explanation</h4><p>' + esc(x.llm) + '</p></div>' +
+      sigs +
+      '<div class="fx-rec"><h4>' + ico('shield') + 'Recommended next step</h4><p>' + esc(x.rec) + '</p></div>' +
+      '<div class="btn-row" style="margin-top:0">' + (x.scanned ? '' : '<button type="button" class="btn sm ghost" data-fx-goto="' + esc(x.id) + '">View in receipt register</button>') + '<button type="button" class="btn sm dark" data-close>Close</button></div>');
+    $('.dialog', modal).classList.add('wide');
+  }
+
+  (function () {
+    $('#tabAlerts').parentNode.addEventListener('keydown', function (e) {
+      if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].indexOf(e.key) < 0) return;
+      var tabs = $$('.tab[data-ftab]'), i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      var n = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i - 1 + tabs.length) % tabs.length : e.key === 'Home' ? 0 : tabs.length - 1;
+      setFTab(tabs[n].dataset.ftab); tabs[n].focus();
+    });
+  })();
+
+  function runForensics() {
+    var btn = $('#fxRun'), label = $('span', btn);
+    btn.disabled = true; label.textContent = 'Reading documents...';
+    $('.ico', btn).classList.add('spin');
+    setTimeout(function () {
+      btn.disabled = false; label.textContent = 'Re-run analysis';
+      $('.ico', btn).classList.remove('spin');
+      renderForensics(); applyFilter();
+      var n = fxAll().filter(function (x) { return x.verdict !== 'clear'; }).length;
+      toast('Forensics finished. ' + n + ' document' + (n === 1 ? '' : 's') + ' need' + (n === 1 ? 's' : '') + ' review.');
+    }, 1400);
   }
 
   /* ---------- Render: deadlines ---------- */
@@ -824,7 +1470,7 @@
   }
   function refresh() {
     fillSelects();
-    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines(); renderFiles();
+    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines(); renderFiles(); renderForensics();
     updateUser(); applyFilter();
   }
 
@@ -836,6 +1482,32 @@
     $('#modalBody').innerHTML = html;
     modal.hidden = false;
     $('.dialog', modal).focus();
+  }
+  function openFSAModal(rec) {
+    var anomalies = [];
+    if (rec.tin && rec.doc && rec.doc.tin !== rec.tin) {
+      anomalies.push('TIN mismatch: doc says ' + rec.doc.tin + ', form says ' + rec.tin);
+    }
+    if (rec.doc && rec.doc.lines) {
+      var total = rec.doc.lines.reduce(function (a, b) { return a + b; }, 0);
+      if (total !== rec.amt) {
+        anomalies.push('Line items sum to ₱' + total + ', but stated amount is ₱' + rec.amt);
+      }
+    }
+    if (rec.amt >= 50000 && rec.amt % 10000 === 0) {
+      anomalies.push('Round-number total ≥ ₱50,000 may need additional approval');
+    }
+    var tone = anomalies.length > 0 ? 'red' : 'green';
+    var body = anomalies.length > 0 ? '<p>' + anomalies.join('<br>') + '</p>' : '<p>No anomalies detected. Statement appears consistent.</p>';
+    openModal(rec.vendor + ' · ' + rec.invoice,
+      '<div class="fx-report-top"><div>' +
+        '<div class="fx-sub">' + esc(cname(rec.client)) + ' · TIN ' + esc(rec.tin) + ' · ' + esc(fmtDate(rec.date)) + ' · ' + peso(rec.amt) + '</div>' +
+        '<div class="fx-verdict ' + tone + '">' + (anomalies.length > 0 ? 'Fake' : 'Clear') + '</div>' +
+      '</div>' +
+      '<div class="fx-narr"><h4>' + ico('cpu') + 'Financial Statement Analysis</h4>' + body + '</div>' +
+      '<div class="fx-rec"><h4>Recommended next step</h4><p>Review the vendor TIN and line-item totals against the official receipt. If discrepancies are found, request BIR-registered documentation.</p></div>' +
+      '<div class="btn-row" style="margin-top:0"><button type="button" class="btn sm dark" data-close>Close</button></div>');
+    $('.dialog', modal).classList.add('wide');
   }
   function closeModal() { modal.hidden = true; $('#modalBody').innerHTML = ''; $('.dialog', modal).classList.remove('wide'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
 
@@ -1312,6 +1984,7 @@
     app.classList.remove('menu-open');
     if (name === 'settings') renderSettings();
     if (name === 'files') renderFiles();
+    if (name === 'fraud') setFTab('alerts');
     applyFilter();
   }
   function route() {
@@ -1332,8 +2005,7 @@
       btn.disabled = false; label.textContent = 'Check all clients for problems';
       $('.ico', btn).classList.remove('spin');
       refresh();
-      var an = analyze();
-      var open = an.alerts.filter(function (a) { return astatus(a) !== 'resolved'; }).length;
+      var open = allAlerts().filter(function (a) { return astatus(a) !== 'resolved'; }).length;
       var high = S.clients.filter(function (c) { return level(c.score) === 'high'; }).length;
       toast('All done. We checked ' + S.receipts.length + ' receipt' + (S.receipts.length === 1 ? '' : 's') + ': ' + open + ' open alert' + (open === 1 ? '' : 's') + ' and ' + high + ' high-risk client' + (high === 1 ? '' : 's') + '.');
     }, 1600);
@@ -1342,6 +2014,8 @@
   document.addEventListener('click', function (e) {
     var t;
     if (e.target.closest('#runScan')) { runScan(); return; }
+    if (e.target.closest('#fxRun')) { runForensics(); return; }
+    if (e.target.closest('#fsSummaryCsv')) { exportFSASummary(); return; }
     if (e.target.closest('#bulkRemind')) {
       var out = S.docs.filter(function (d) { return d.status !== 'received'; });
       if (!out.length) { toast('Nothing to chase. Every document has been received.'); return; }
@@ -1356,6 +2030,15 @@
       return;
     }
     if ((t = e.target.closest('[data-client]'))) { clientModal(t.dataset.client); return; }
+    if ((t = e.target.closest('[data-ftab]'))) { setFTab(t.dataset.ftab); return; }
+    if ((t = e.target.closest('[data-fsa-report]'))) { fsaModal(t.dataset.fsaReport); return; }
+    if ((t = e.target.closest('[data-fx]'))) { fxModal(t.dataset.fx); return; }
+    if ((t = e.target.closest('[data-fx-goto]'))) {
+      var fxInv = t.dataset.fxGoto;
+      closeModal(); pendingSearch = fxInv;
+      if (location.hash === '#receipts') { searchInput.value = fxInv; applyFilter(); } else location.hash = 'receipts';
+      return;
+    }
     if (e.target.closest('#addClientBtn')) { addClientModal(); return; }
     if ((t = e.target.closest('[data-view-receipts]'))) {
       var name = cname(t.dataset.viewReceipts);
@@ -1413,6 +2096,8 @@
     }
     if (t.id === 'riskFilter' || t.id === 'statusFilter') { renderClients(); applyFilter(); }
     if (t.id === 'alertFilter') { renderFraud(); applyFilter(); }
+    if (t.id === 'fxFilter') { renderForensics(); applyFilter(); }
+    if (t.id === 'fsFilter') { renderFSA(); applyFilter(); }
     if (t.id === 'deadlineFilter') { renderDeadlines(); applyFilter(); }
   });
 
@@ -1428,9 +2113,12 @@
       var rec = { id: uid(), client: client, vendor: vendor, tin: tin, invoice: inv, date: date, amt: Math.round(amt * 100) / 100, file: file ? file.name : (scanName || '') };
       S.receipts.push(rec); save('receipts');
       var flags = analyze().flags[rec.id] || [];
+      var fsa = fsaAnalyze(rec);
       f.reset(); clearScan(); $('#rDate').value = isoToday();
       refresh();
-      toast(flags.length ? 'Receipt saved, but it needs a look: ' + flags.join(', ').toLowerCase() + '.' : 'Receipt saved. Nothing suspicious found.', flags.length ? 'error' : '');
+      var msg = flags.length ? 'Receipt saved, but it needs a look: ' + flags.join(', ').toLowerCase() + '.' : 'Receipt saved. Nothing suspicious found.';
+      if (fsa.length) msg += ' FSA: ' + fsa;
+      toast(msg, flags.length || fsa.length ? 'error' : '');
       return;
     }
 
@@ -1474,6 +2162,24 @@
   var scanner = $('#scanner'), scanVideo = $('#scanVideo'), scanMsg = $('#scanMsg'), scanSheet = $('#scanSheet');
   var camStream = null, facing = 'environment', flashOn = false;
   var scanName = '', pendingName = '', pendingUrl = '';
+  var scanKind = 'receipt', stmtBusy = false;
+
+  function setScanKind(kind) {
+    scanKind = kind === 'statement' ? 'statement' : 'receipt';
+    var st = scanKind === 'statement';
+    $('#scanKindReceipt').classList.toggle('on', !st);
+    $('#scanKindReceipt').setAttribute('aria-pressed', String(!st));
+    $('#scanKindStatement').classList.toggle('on', st);
+    $('#scanKindStatement').setAttribute('aria-pressed', String(st));
+    $('#scanClientField').hidden = !st;
+    $('#scanHint').textContent = st ? 'Snap a financial statement' : 'Snap a receipt or invoice';
+    $('#scanSheetTitle').textContent = st ? 'Statement photo taken' : 'Photo taken';
+    $('#scanSheetText').textContent = st ? 'We will read the totals and check the statement for anomalies.' : 'Nice shot. Type in the details next, and the photo stays with the receipt.';
+    $('#scanUse').textContent = st ? 'Check this statement' : 'Use this photo';
+  }
+  $('#scanKindReceipt').addEventListener('click', function () { setScanKind('receipt'); });
+  $('#scanKindStatement').addEventListener('click', function () { setScanKind('statement'); });
+  setScanKind('receipt');
 
   function stamp() {
     var d = new Date(), p = function (n) { return ('0' + n).slice(-2); };
@@ -1539,6 +2245,10 @@
 
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-scan-open]')) openScanner();
+    if (e.target.closest('[data-fsa-analyze]')) {
+      var rec = S.receipts.find(function (r) { return r.id === e.target.closest('[data-fsa-analyze]').dataset.fsaAnalyze; });
+      if (rec) openFSAModal(rec);
+    }
   });
   $('#scanClose').addEventListener('click', closeScanner);
   $('#scanChipX').addEventListener('click', clearScan);
@@ -1572,12 +2282,194 @@
     $('#scanShutter').focus();
   });
   $('#scanUse').addEventListener('click', function () {
+    if (!pendingUrl) { $('#scanShutter').focus(); return; }
+    if (scanKind === 'statement') {
+      if (stmtBusy) return;
+      var client = $('#scanClient').value, url = pendingUrl;
+      scanSheet.hidden = true;
+      runStatementScan(url, client);
+      return;
+    }
     setScan(pendingName, pendingUrl);
     closeScanner(); go('receipts');
     toast('Photo attached. Add the receipt details below, then save.');
     setTimeout(function () { $('#rVendor').focus(); }, 60);
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !scanner.hidden) closeScanner(); });
+
+  /* ---------- Financial statement scan (browser OCR + anomaly checks) ---------- */
+  var OCR_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  var ocrLoader = null;
+  function loadOCR() {
+    if (window.Tesseract) return Promise.resolve();
+    if (ocrLoader) return ocrLoader;
+    ocrLoader = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = OCR_SRC;
+      s.async = true;
+      s.onload = function () { if (window.Tesseract) resolve(); else reject(new Error('unavailable')); };
+      s.onerror = function () { ocrLoader = null; reject(new Error('offline')); };
+      document.head.appendChild(s);
+    });
+    return ocrLoader;
+  }
+
+  var MONTH_NUM = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  function isoOf(y, m, d) {
+    var dt = new Date(y, m - 1, d);
+    if (isNaN(dt.getTime()) || dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+    return y + '-' + ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2);
+  }
+  function findStatementDate(text) {
+    var s = String(text || ''), m;
+    m = s.match(/\b(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\b/);
+    if (m) return isoOf(+m[1], +m[2], +m[3]);
+    m = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/i);
+    if (m) return isoOf(+m[3], MONTH_NUM[m[1].toLowerCase()], +m[2]);
+    m = s.match(/\b(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+(\d{4})/i);
+    if (m) return isoOf(+m[3], MONTH_NUM[m[2].toLowerCase()], +m[1]);
+    m = s.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4}|\d{2})\b/);
+    if (m) {
+      var a = +m[1], b = +m[2], y = +m[3];
+      if (y < 100) y += 2000;
+      return a > 12 && b <= 12 ? isoOf(y, b, a) : isoOf(y, a, b);
+    }
+    return '';
+  }
+  function findStatementName(text) {
+    var skip = /(page|date|as of|for the (year|period)|period ended|currency|amounts? in|note\s*\d|tel|address)/i;
+    var lines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(Boolean).slice(0, 8);
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i].replace(/^[^A-Za-z]+/, '').trim();
+      if (l.length < 3 || l.length > 56) continue;
+      if (!/[A-Za-z]{3,}/.test(l)) continue;
+      if (skip.test(l)) continue;
+      if (/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(l)) continue;
+      return l;
+    }
+    return '';
+  }
+  function findStatementTotal(text) {
+    var lines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+    var best = 0;
+    lines.forEach(function (l) {
+      if (!/(grand\s*total|total\b|amount\s*due|net\s+(income|sales|profit)|balance|revenue)/i.test(l)) return;
+      if (/sub\s*-?\s*total/i.test(l)) return;
+      var nums = l.match(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g) || [];
+      nums.forEach(function (raw) {
+        var v = parseFloat(raw.replace(/,/g, ''));
+        if (v >= 1 && v <= 1e9) best = Math.max(best, v);
+      });
+    });
+    if (best) return best;
+    var decimals = String(text || '').match(/(?:\d{1,3}(?:,\d{3})+|\d+)\.\d{2}\b/g) || [];
+    var cands = decimals.map(function (r) { return parseFloat(r.replace(/,/g, '')); }).filter(function (v) { return v >= 1 && v <= 1e9; });
+    return cands.length ? Math.max.apply(null, cands) : 0;
+  }
+  function labelledAmount(text, re) {
+    var lines = String(text || '').split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+      if (!re.test(lines[i])) continue;
+      var nums = lines[i].match(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g) || [];
+      if (!nums.length) continue;
+      var v = parseFloat(nums[nums.length - 1].replace(/,/g, ''));
+      if (v >= 1 && v <= 1e9) return v;
+    }
+    return 0;
+  }
+  function statementChecks(read, text) {
+    var out = [], total = read.total;
+    if (!total) out.push({ label: 'Total not read', detail: 'We could not find a statement total. Check that the figures are in the photo and not cut off.', sev: 'high' });
+    if (!read.date) out.push({ label: 'No date read', detail: 'The statement has no readable date, so the period cannot be verified.', sev: 'med' });
+    else if (read.date > isoToday()) out.push({ label: 'Future date', detail: 'The statement is dated after today, which is not possible for a filed statement.', sev: 'high' });
+    if (total >= 50000 && total % 10000 === 0) out.push({ label: 'Round-number total', detail: peso(total) + ' is a round figure at or above the ' + peso(50000) + ' approval limit. Verify it against the ledger.', sev: 'med' });
+    if (total >= 47500 && total < 50000) out.push({ label: 'Just under the limit', detail: peso(total) + ' sits within 5% of the ' + peso(50000) + ' approval limit.', sev: 'high' });
+
+    var assets = labelledAmount(text, /total\s*assets/i);
+    var liab = labelledAmount(text, /total\s*liabilit/i);
+    var equity = labelledAmount(text, /total\s*(equity|stockholders|shareholders)/i);
+    if (assets && liab && equity) {
+      var gap = assets - (liab + equity);
+      if (Math.abs(gap) > Math.max(100, assets * 0.01)) out.push({ label: 'Balance sheet does not balance', detail: 'Total assets are ' + peso(assets) + ', but liabilities plus equity add up to ' + peso(liab + equity) + ' (a ' + peso(Math.abs(gap)) + ' gap).', sev: 'high', variance: Math.round(Math.abs(gap) / assets * 100) });
+    }
+
+    var revenue = labelledAmount(text, /total\s*(revenue|sales)/i);
+    var expenses = labelledAmount(text, /total\s*(expenses?|costs?)/i);
+    var net = labelledAmount(text, /net\s*(income|profit)/i);
+    if (revenue && expenses && net) {
+      var diff = revenue - expenses - net;
+      if (Math.abs(diff) > Math.max(100, revenue * 0.01)) out.push({ label: 'Income statement does not reconcile', detail: 'Revenue of ' + peso(revenue) + ' less expenses of ' + peso(expenses) + ' gives ' + peso(revenue - expenses) + ', not the stated net income of ' + peso(net) + '.', sev: 'high', variance: Math.round(Math.abs(diff) / revenue * 100) });
+    }
+
+    var counts = {};
+    String(text || '').replace(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?/g, function (raw) {
+      var v = parseFloat(raw.replace(/,/g, ''));
+      if (v >= 1000 && v <= 1e9 && !(v >= 1900 && v <= 2100)) counts[v] = (counts[v] || 0) + 1;
+      return raw;
+    });
+    Object.keys(counts).forEach(function (k) {
+      if (counts[k] >= 3 && Number(k) !== total) out.push({ label: 'Repeated amount', detail: peso(Number(k)) + ' appears ' + counts[k] + ' times on the statement. Make sure these are separate entries.', sev: 'med' });
+    });
+    return out;
+  }
+
+  function buildStatement(text, clientId) {
+    var total = findStatementTotal(text);
+    var date = findStatementDate(text);
+    var name = findStatementName(text) || 'Scanned statement';
+    var checks = statementChecks({ total: total, date: date }, text);
+    var high = checks.filter(function (c) { return c.sev === 'high'; }).length;
+    var med = checks.filter(function (c) { return c.sev === 'med'; }).length;
+    var score = checks.length ? Math.max(20, 100 - high * 25 - med * 12) : 100;
+    var verdict = !checks.length ? 'clear' : high ? 'fake' : 'review';
+    var variance = '\u2014';
+    checks.forEach(function (c) { if (variance === '\u2014' && c.variance) variance = c.variance + '%'; });
+    var summary = checks.length
+      ? 'I read a total of ' + peso(total) + (date ? ' dated ' + fmtDate(date) : '') + ' and found ' + checks.length + ' issue' + (checks.length === 1 ? '' : 's') + ': ' + checks.map(function (c) { return c.detail; }).join(' ')
+      : 'I read a total of ' + peso(total) + (date ? ' dated ' + fmtDate(date) : '') + '. The totals, dates and amount patterns match the rest of the engagement file.';
+    return {
+      id: uid(), client: clientId, name: name, date: date || isoToday(), total: total,
+      type: checks.length ? checks[0].label : 'No anomalies detected',
+      variance: variance, authenticity: score, verdict: verdict, llm: summary,
+      rec: checks.length
+        ? 'Ask the client for the supporting schedule and ledger detail behind the flagged figures before posting the statement.'
+        : 'File the statement with the engagement and continue normal review.',
+      sigs: checks.map(function (c) { return { label: c.label, detail: c.detail, sev: c.sev, w: c.sev === 'high' ? 24 : 12 }; }),
+      reasons: checks, when: nowStamp()
+    };
+  }
+
+  function runStatementScan(dataUrl, clientId) {
+    stmtBusy = true;
+    scanMsg.hidden = false;
+    scanMsg.textContent = 'Reading the statement\u2026';
+    loadOCR().then(function () {
+      return window.Tesseract.recognize(dataUrl, 'eng', {
+        logger: function (m) {
+          if (m.status === 'recognizing text') scanMsg.textContent = 'Reading the statement\u2026 ' + Math.round((m.progress || 0) * 100) + '%';
+        }
+      });
+    }).then(function (res) {
+      stmtBusy = false;
+      var rec = buildStatement((res && res.data && res.data.text) || '', clientId);
+      S.statements = S.statements || [];
+      S.statements.unshift(rec);
+      save('statements');
+      closeScanner();
+      go('fraud');
+      setFTab('fsa');
+      fsaModal(rec.id);
+      toast(rec.verdict === 'clear'
+        ? 'Statement checked. No anomalies found. Saved to the statement register.'
+        : 'Statement checked: ' + rec.reasons.length + ' anomal' + (rec.reasons.length === 1 ? 'y' : 'ies') + ' found. Saved to the statement register.', rec.verdict === 'clear' ? '' : 'error');
+    }).catch(function () {
+      stmtBusy = false;
+      scanMsg.hidden = false;
+      scanMsg.textContent = window.Tesseract
+        ? 'We couldn\u2019t read that statement. Try a sharper, straight-on shot.'
+        : 'The statement reader needs an internet connection the first time. Try again online.';
+    });
+  }
 
   /* ---------- Init ---------- */
   loadAll();

@@ -808,6 +808,19 @@ html[data-theme="dark"] .slider{ background:#3A4B5A; }
 .ocr-read span { display:block; margin-top:3px; font-size:13.5px; color:var(--muted); }
 .ocr-read .ocr-amt { font-size:16px; font-weight:700; color:var(--ink); }
 .ocr-read .btn-row { margin-top:14px; }
+.ocr-read strong.bad .ico { color:var(--danger); }
+.scan-kind { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.seg-btn[aria-pressed="true"] { background:#fff; border-color:var(--line); color:var(--ink); }
+.stmt-register { margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
+.stmt-register-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:4px; }
+.stmt-register h4 { margin:0; font-size:14px; }
+.stmt-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+.stmt-row:last-child { border-bottom:0; padding-bottom:0; }
+.stmt-row strong { display:block; font-size:14px; }
+.stmt-row .sub { display:block; margin-top:2px; font-size:12.5px; color:var(--muted); }
+.stmt-reasons { display:block; margin:10px 0 0; padding-left:18px; font-size:13px; color:var(--muted); }
+.stmt-reasons li + li { margin-top:4px; }
+.stmt-reasons b { color:var(--ink); font-weight:600; }
 .tag-scan {
   display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; vertical-align:1px;
   font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
@@ -815,10 +828,10 @@ html[data-theme="dark"] .slider{ background:#3A4B5A; }
 }
 td .icon-btn { display:inline-grid; vertical-align:middle; margin-left:4px; }
 html[data-theme="dark"] .seg { background:var(--d-surface2); }
-html[data-theme="dark"] .seg-btn[aria-selected="true"] { background:var(--d-surface); color:var(--d-text); border-color:var(--line); }
+html[data-theme="dark"] .seg-btn[aria-selected="true"], html[data-theme="dark"] .seg-btn[aria-pressed="true"] { background:var(--d-surface); color:var(--d-text); border-color:var(--line); }
 html[data-theme="dark"] .seg-btn:hover { color:var(--d-text); }
 html[data-theme="dark"] .ocr-thumb { background:var(--d-surface2); }
-html[data-theme="dark"] .ocr-read .ocr-amt { color:var(--d-text); }
+html[data-theme="dark"] .ocr-read .ocr-amt, html[data-theme="dark"] .stmt-reasons b { color:var(--d-text); }
 @media (max-width:700px) {
   .form-grid { grid-template-columns:minmax(0,1fr); }
   .ocr-result { flex-direction:column; }
