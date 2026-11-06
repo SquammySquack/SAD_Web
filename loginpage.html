@@ -78,7 +78,7 @@
 
         <button type="submit" class="btn-submit" id="submitBtn">Log in to my portal</button>
         <div class="status" id="status" role="status" aria-live="polite"></div>
-        <p class="auth-switch">New to DCM &amp; Co.? <a href="#signup" class="link" id="toSignup">Create a client account</a></p>
+        <p class="auth-switch" id="signupPrompt">New to DCM &amp; Co.? <a href="#signup" class="link" id="toSignup">Create a client account</a></p>
       </form>
 
       <form id="signupForm" novalidate hidden>
@@ -160,6 +160,7 @@
   var signupForm = $('signupForm'), suName = $('suName'), suEmail = $('suEmail'),
       suPw = $('suPw'), suPw2 = $('suPw2'), suStatus = $('suStatus'), signupBtn = $('signupBtn');
   var roleSwitch = document.querySelector('.role-switch');
+  var signupPrompt = $('signupPrompt'); /* <-- ADD THIS LINE */
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var ACCOUNTS_KEY = 'dcm_accounts';
 
