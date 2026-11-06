@@ -284,6 +284,7 @@
 
         <div class="tabs" role="tablist" aria-label="Fraud analytics sections">
           <button type="button" class="tab on" role="tab" id="tabAlerts" aria-selected="true" aria-controls="panelAlerts" data-ftab="alerts">Alerts<span class="tab-count" id="tabAlertCount">0</span></button>
+          <button type="button" class="tab" role="tab" id="tabCross" aria-selected="false" aria-controls="panelCross" data-ftab="cross" tabindex="-1">Cross-Client Checks<span class="tab-count" id="tabCrossCount" hidden>0</span></button>
           <button type="button" class="tab" role="tab" id="tabForensics" aria-selected="false" aria-controls="panelForensics" data-ftab="forensics" tabindex="-1">Document forensics<span class="tab-count" id="tabFxCount" hidden>0</span></button>
           <button type="button" class="tab" role="tab" id="tabFSA" aria-selected="false" aria-controls="panelFSA" data-ftab="fsa" tabindex="-1">Financial Statement Analytics<span class="tab-count" id="tabFSACount" hidden>0</span></button>
         </div>
@@ -316,6 +317,44 @@
           <div class="card-head"><h3><svg class="ico"><use href="#i-cpu"/></svg>Risk by client</h3></div>
           <div id="riskBars"></div>
         </section>
+        </div>
+
+        <!-- Cross-Client Checks -->
+        <div class="ftab" id="panelCross" role="tabpanel" aria-labelledby="tabCross" hidden>
+          <div class="fx-engine">
+            <div class="fx-engine-main">
+              <span class="fx-model"><svg class="ico"><use href="#i-users"/></svg>cross-client-v1 · Heuristics</span>
+              <p>Scans the receipt register for the same TIN used by different clients (Ghost Vendors) and for invoices that have been submitted more than once (Duplicates).</p>
+            </div>
+            <button type="button" class="btn dark sm" id="crossRun"><svg class="ico"><use href="#i-sync"/></svg><span>Re-run checks</span></button>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><small>Receipts checked</small><strong id="crossDocs">0</strong><span>In the register</span></div>
+            <div class="stat red"><small>Ghost vendors</small><strong id="crossGhosts">0</strong><span>Vendor TINs across multiple clients</span></div>
+            <div class="stat red"><small>Duplicates found</small><strong id="crossDupes">0</strong><span>Same invoice or vendor+amount+date</span></div>
+            <div class="stat"><small>Clear receipts</small><strong id="crossClear">0</strong><span>No cross-client issues</span></div>
+          </div>
+
+          <section class="card" style="margin-bottom:22px">
+            <div class="toolbar">
+              <h3>Cross-client findings</h3>
+              <div class="filters">
+                <select class="select" id="crossFilter" aria-label="Filter cross-client findings">
+                  <option value="all">All flagged items</option>
+                  <option value="ghost">Ghost vendors only</option>
+                  <option value="dup">Duplicates only</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap scope">
+              <table>
+                <thead><tr><th>Document</th><th>Client</th><th>Issue</th><th>Status</th><th></th></tr></thead>
+                <tbody id="crossRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>No cross-client issues fit this filter.</div>
+          </section>
         </div>
 
         <!-- Document forensics (LLM) -->
@@ -944,6 +983,55 @@
     tab.textContent = open; tab.classList.toggle('hot', open > 0);
   }
 
+  /* ---------- Cross-Client Checks ---------- */
+  function renderCross() {
+    var an = analyze();
+    var ghosts = an.alerts.filter(function (a) { return a.type === 'ghost'; });
+    var dupes = an.alerts.filter(function (a) { return a.type === 'dup'; });
+    
+    // Stats
+    $('#crossDocs').textContent = S.receipts.length;
+    $('#crossGhosts').textContent = ghosts.length;
+    $('#crossDupes').textContent = dupes.length;
+    $('#crossClear').textContent = S.receipts.length - Object.keys(an.flags).length;
+
+    var tabCount = $('#tabCrossCount');
+    var totalFlagged = ghosts.length + dupes.length;
+    tabCount.textContent = totalFlagged;
+    tabCount.hidden = totalFlagged === 0;
+    tabCount.classList.toggle('hot', totalFlagged > 0);
+
+    // Table
+    var f = $('#crossFilter').value;
+    var rows = [];
+
+    S.receipts.forEach(function(r) {
+        var flags = an.flags[r.id];
+        if (!flags) return; // clear
+        
+        var isGhost = flags.indexOf('Ghost vendor') >= 0;
+        var isDup = flags.indexOf('Duplicate invoice') >= 0;
+        
+        if (f === 'ghost' && !isGhost) return;
+        if (f === 'dup' && !isDup) return;
+
+        var label = flags.join(', ');
+        
+        rows.push('<tr class="filterable">' +
+            '<td><div class="fx-doc"><span class="fx-tile bad">' + ico('file') + '</span><div>' +
+                '<div class="fx-name">' + esc(r.vendor) + '</div>' +
+                '<div class="fx-sub">' + esc(r.invoice) + ' · ' + esc(fmtDate(r.date)) + '</div></div></div></td>' +
+            '<td>' + esc(cname(r.client)) + '<div class="fx-sub">TIN ' + esc(r.tin) + '</div></td>' +
+            '<td><span class="sig sev-high">' + esc(label) + '</span></td>' +
+            '<td><span class="badge overdue">Flagged</span></td>' +
+            '<td class="right"><button type="button" class="btn sm ghost" data-cross-goto="' + esc(r.id) + '">View in register</button></td>' +
+        '</tr>');
+    });
+
+    $('#crossRows').innerHTML = rows.join('');
+    $('#crossRows').parentNode.parentNode.hidden = rows.length === 0 && f === 'all';
+  }
+
   /* ---------- Document forensics (LLM over the receipt register) ---------- */
   var FX_LIMIT = 50000;            /* purchases at or above this need a second signature */
   var FX_W = { name: 12, tin: 22, lines: 26, total: 20, date: 16, template: 24, image: 28, under: 20, round: 6, repeat: 15 };
@@ -953,7 +1041,6 @@
 
   function fxTone(score) { return score >= 70 ? 'low' : score >= 40 ? 'medium' : 'high'; }
 
-  /* page layouts shared by documents filed under more than one supplier TIN */
   function fxShared() {
     var map = {};
     S.receipts.forEach(function (r) {
@@ -1348,9 +1435,11 @@
       b.tabIndex = on ? 0 : -1;
     });
     $('#panelAlerts').hidden = name !== 'alerts';
+    $('#panelCross').hidden = name !== 'cross';
     $('#panelForensics').hidden = name !== 'forensics';
     $('#panelFSA').hidden = name !== 'fsa';
     if (name === 'alerts') renderFraud();
+    if (name === 'cross') renderCross();
     if (name === 'forensics') renderForensics();
     if (name === 'fsa') renderFSA();
     applyFilter();
@@ -1470,7 +1559,7 @@
   }
   function refresh() {
     fillSelects();
-    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderDeadlines(); renderFiles(); renderForensics();
+    renderDashboard(); renderClients(); renderReceipts(); renderFraud(); renderCross(); renderDeadlines(); renderFiles(); renderForensics();
     updateUser(); applyFilter();
   }
 
@@ -2016,6 +2105,18 @@
     if (e.target.closest('#runScan')) { runScan(); return; }
     if (e.target.closest('#fxRun')) { runForensics(); return; }
     if (e.target.closest('#fsSummaryCsv')) { exportFSASummary(); return; }
+    if (e.target.closest('#crossRun')) {
+      var btn = $('#crossRun'), label = $('span', btn);
+      btn.disabled = true; label.textContent = 'Checking...';
+      $('.ico', btn).classList.add('spin');
+      setTimeout(function() {
+        btn.disabled = false; label.textContent = 'Re-run checks';
+        $('.ico', btn).classList.remove('spin');
+        renderCross(); applyFilter();
+        toast('Cross-client checks finished.');
+      }, 1000);
+      return;
+    }
     if (e.target.closest('#bulkRemind')) {
       var out = S.docs.filter(function (d) { return d.status !== 'received'; });
       if (!out.length) { toast('Nothing to chase. Every document has been received.'); return; }
@@ -2033,6 +2134,15 @@
     if ((t = e.target.closest('[data-ftab]'))) { setFTab(t.dataset.ftab); return; }
     if ((t = e.target.closest('[data-fsa-report]'))) { fsaModal(t.dataset.fsaReport); return; }
     if ((t = e.target.closest('[data-fx]'))) { fxModal(t.dataset.fx); return; }
+    if ((t = e.target.closest('[data-cross-goto]'))) {
+      var rec = S.receipts.find(function(r) { return r.id === t.dataset.crossGoto; });
+      if (rec) {
+        closeModal();
+        pendingSearch = rec.invoice;
+        if (location.hash === '#receipts') { searchInput.value = rec.invoice; applyFilter(); } else location.hash = 'receipts';
+      }
+      return;
+    }
     if ((t = e.target.closest('[data-fx-goto]'))) {
       var fxInv = t.dataset.fxGoto;
       closeModal(); pendingSearch = fxInv;
@@ -2096,6 +2206,7 @@
     }
     if (t.id === 'riskFilter' || t.id === 'statusFilter') { renderClients(); applyFilter(); }
     if (t.id === 'alertFilter') { renderFraud(); applyFilter(); }
+    if (t.id === 'crossFilter') { renderCross(); applyFilter(); }
     if (t.id === 'fxFilter') { renderForensics(); applyFilter(); }
     if (t.id === 'fsFilter') { renderFSA(); applyFilter(); }
     if (t.id === 'deadlineFilter') { renderDeadlines(); applyFilter(); }
