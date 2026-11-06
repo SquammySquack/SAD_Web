@@ -47,6 +47,7 @@
   <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></symbol>
   <symbol id="i-flip" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
 </svg>
 
@@ -65,6 +66,7 @@
       <li><a href="#upload" data-view="upload"><svg class="ico"><use href="#i-upload"/></svg>Upload Documents</a></li>
       <li><a href="#spending" data-view="spending"><svg class="ico"><use href="#i-wallet"/></svg>Spending Tracker</a></li>
       <li><a href="#flagged" data-view="flagged"><svg class="ico"><use href="#i-flag"/></svg>Flagged Transactions</a></li>
+      <li><a href="#fraud" data-view="fraud"><svg class="ico"><use href="#i-shield"/></svg>Fraud &amp; Anomalies<span class="nav-count" id="navFx" hidden>0</span></a></li>
       <li><a href="#reports" data-view="reports"><svg class="ico"><use href="#i-report"/></svg>Financial Reports</a></li>
       <li><a href="#messages" data-view="messages"><svg class="ico"><use href="#i-message"/></svg>Messages</a></li>
     </ul>
@@ -154,7 +156,7 @@
 
           <div class="alert" role="alert">
             <svg class="ico"><use href="#i-alert"/></svg>
-            <p><strong>Fraud Alert:</strong> The transaction with <strong>XYZ Trading</strong> has been flagged by our anomaly detection system. The vendor's Tax Identification Number (TIN) appears in transactions for multiple clients, indicating a potential "Ghost Vendor." Your CPA has been notified to review this document. <a href="#flagged" class="link">Review flagged items</a></p>
+            <p><strong>Fraud Alert:</strong> The transaction with <strong>XYZ Trading</strong> has been flagged by our anomaly detection system. The vendor's Tax Identification Number (TIN) appears in transactions for multiple clients, indicating a potential "Ghost Vendor." Your CPA has been notified to review this document. <a href="#flagged" class="link">Review flagged items</a> &middot; <a href="#fraud" class="link">See all fraud checks</a></p>
           </div>
         </section>
       </div>
@@ -354,6 +356,73 @@
         <div class="flag-list" id="flagList"></div>
       </div>
 
+      <!-- ===================== FRAUD & ANOMALIES ===================== -->
+      <div class="view" id="view-fraud" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Fraud &amp; Anomalies</h1>
+            <p>What our AI found in your receipts and financial statements, and what to do about each one.</p>
+          </div>
+          <span class="chip"><i></i> Sample data</span>
+        </div>
+
+        <div class="stats four">
+          <div class="stat"><small>Documents checked</small><strong id="fxStatDocs">0</strong><span>Receipts and invoices</span></div>
+          <div class="stat red"><small>Documents flagged</small><strong id="fxStatDocFlag">0</strong><span>Need a closer look</span></div>
+          <div class="stat"><small>Statements checked</small><strong id="fxStatStmts">0</strong><span>Financial statements</span></div>
+          <div class="stat red"><small>Statements flagged</small><strong id="fxStatStmtFlag">0</strong><span>With anomalies</span></div>
+        </div>
+
+        <div class="seg fx-tabs" role="tablist" aria-label="Fraud and anomaly checks">
+          <button type="button" class="seg-btn" id="fxTabDocs" role="tab" aria-selected="true" aria-controls="fxPanelDocs">Document fraud<span class="fx-pill" id="fxTabDocsN" hidden>0</span></button>
+          <button type="button" class="seg-btn" id="fxTabStmts" role="tab" aria-selected="false" aria-controls="fxPanelStmts">Financial statement anomalies<span class="fx-pill" id="fxTabStmtsN" hidden>0</span></button>
+        </div>
+
+        <!-- Document fraud -->
+        <div id="fxPanelDocs" role="tabpanel" aria-labelledby="fxTabDocs">
+          <div class="fx-engine">
+            <span class="fx-model"><svg class="ico"><use href="#i-shield"/></svg>AI document check</span>
+            <p>Reads the vendor, amount and date on each receipt, compares them with the rest of your records, and explains anything that looks off in plain English.</p>
+          </div>
+
+          <section class="card">
+            <div class="toolbar">
+              <h3 style="font-size:17px">Your documents</h3>
+              <select class="select" id="fxFilter" aria-label="Filter documents">
+                <option value="all">All documents</option>
+                <option value="flagged">Flagged only</option>
+                <option value="clear">Clear only</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Document</th><th>Amount</th><th>What we noticed</th><th>Authenticity</th></tr></thead>
+                <tbody id="fxRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" hidden>Nothing fits this filter. Try another one.</div>
+          </section>
+
+          <h2 class="fx-h2" id="fxFoundHead">What we found</h2>
+          <div class="flag-list" id="fxFound"></div>
+
+          <section class="card" style="margin-top:22px">
+            <div class="card-head"><h3><svg class="ico"><use href="#i-wallet"/></svg>Amount patterns</h3></div>
+            <ul class="fx-list" id="fxAmounts"></ul>
+          </section>
+        </div>
+
+        <!-- Financial statement anomalies -->
+        <div id="fxPanelStmts" role="tabpanel" aria-labelledby="fxTabStmts" hidden>
+          <div class="fx-engine">
+            <span class="fx-model"><svg class="ico"><use href="#i-shield"/></svg>AI statement check</span>
+            <p>Reads the totals and dates on a financial statement and checks that the figures add up, balance and make sense next to each other.</p>
+            <button type="button" class="btn inline sm" data-fx-scan><svg class="ico"><use href="#i-camera"/></svg>Scan a statement</button>
+          </div>
+          <div class="flag-list" id="fxStmts"></div>
+        </div>
+      </div>
+
       <!-- ===================== REPORTS ===================== -->
       <div class="view" id="view-reports" hidden>
         <div class="page-head">
@@ -379,7 +448,7 @@
                   <td><button type="button" class="btn inline sm ghost" data-report="spending"><svg class="ico"><use href="#i-download"/></svg>Download CSV</button></td>
                 </tr>
                 <tr class="filterable">
-                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-flag"/></svg></div><div><strong>Fraud and Anomaly Report</strong><span>Flagged transactions and the reason for each flag</span></div></div></td>
+                  <td><div class="report-name"><div class="tile"><svg class="ico"><use href="#i-flag"/></svg></div><div><strong>Fraud and Anomaly Report</strong><span>Flagged documents, statement anomalies and the reason for each</span></div></div></td>
                   <td>October 2026</td><td>CSV</td>
                   <td><button type="button" class="btn inline sm ghost" data-report="fraud"><svg class="ico"><use href="#i-download"/></svg>Download CSV</button></td>
                 </tr>
@@ -632,7 +701,7 @@
         '<span><span class="amt">' + peso(map[c]) + '</span><span class="pct">' + pct(map[c], total) + '%</span></span></div>';
     }).join('');
   }
-  function renderAll() { renderTx(); renderSpending(); renderFlagged(); applyFilter(); }
+  function renderAll() { renderTx(); renderSpending(); renderFlagged(); renderFraud(); applyFilter(); }
   function renderChart() {
     var max = Math.max.apply(null, MONTHS.map(function (x) { return x.v; })) || 1;
     $('#monthChart').innerHTML = MONTHS.map(function (x, i) {
@@ -690,10 +759,16 @@
           [['Total', total.toFixed(2), '100%']])];
     },
     fraud: function () {
-      return ['dcm-fraud-anomaly-report-oct-2026.csv',
-        [['Vendor', 'Invoice Date', 'Amount (PHP)', 'Reason']].concat(
-          TX.filter(function (t) { return t.status === 'Flagged'; })
-            .map(function (t) { return [t.vendor, t.date, t.amt.toFixed(2), FLAG_REASON]; }))];
+      var rows = [['Type', 'Item', 'Date', 'Amount (PHP)', 'Authenticity', 'What we found']];
+      fxDocs().filter(function (x) { return x.verdict !== 'clear'; }).forEach(function (x) {
+        rows.push(['Document', x.t.vendor, x.t.date, Number(x.t.amt).toFixed(2), x.score + '%',
+          x.sigs.map(function (s) { return s.label + ': ' + s.detail; }).join(' | ')]);
+      });
+      stmtRecords().filter(function (r) { return r.findings.length; }).forEach(function (r) {
+        rows.push(['Financial statement', r.name, r.date ? fmtISO(r.date) : '', r.total ? Number(r.total).toFixed(2) : '', r.score + '%',
+          r.findings.map(function (f) { return f.label + (f.variance ? ' (' + f.variance + '% variance)' : '') + ': ' + f.detail; }).join(' | ')]);
+      });
+      return ['dcm-fraud-anomaly-report-oct-2026.csv', rows];
     }
   };
 
@@ -1245,6 +1320,7 @@
     all.unshift(rec);
     store.set('dcm_statements', all);
     renderStatementRegister();
+    renderFraud();
     setStatus('');
     var el = $('#ocrResult');
     el.innerHTML = '<div class="ocr-thumb"><img src="' + dataUrl + '" alt="The financial statement you scanned"></div>' +
@@ -1274,6 +1350,187 @@
         '<span class="sub">' + (r.date ? esc(fmtISO(r.date)) : 'Date not read') + ' \u00b7 ' + (r.total ? peso(r.total) : 'Total not read') + '</span></div>' +
         '<span class="badge ' + (bad ? 'flagged' : 'verified') + '">' + (bad ? reasons.length + ' anomal' + (reasons.length === 1 ? 'y' : 'ies') : 'Clear') + '</span></div>';
     }).join('');
+  }
+
+  /* ---------- Fraud & anomaly checks ---------- */
+  var FX_LIMIT = 50000;
+  var FX_W = { ghost: 34, dup: 26, under: 20, repeat: 15, approval: 10, round: 6 };
+  var FX_LABEL = { fake: 'High concern', review: 'Needs review', clear: 'Clear' };
+  var SAMPLE_STMT = [{
+    id: 'sample-q3', sample: true, name: 'Q3 2026 Financial Statement', date: '2026-09-30', total: 0, score: 34,
+    findings: [
+      { label: 'Expense spike', sev: 'high', variance: 312, detail: 'Miscellaneous expenses rose 312% compared with the last quarter, far more than normal swings in running costs. This can mean personal costs are being booked as business expenses.' },
+      { label: 'Cash variance', sev: 'med', variance: 45, detail: 'Revenue grew by ₱500,000 but cash did not rise with it. That can point to sales that have not been collected yet, or revenue booked too early.' }
+    ]
+  }];
+  function normV(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function fxTone(score) { return score >= 70 ? 'low' : score >= 40 ? 'medium' : 'high'; }
+  function fxVerdict(score) { return score >= 70 ? 'clear' : score >= 40 ? 'review' : 'fake'; }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+
+  function fxDocs() {
+    return TX.map(function (t, i) {
+      var amt = Number(t.amt) || 0, sigs = [];
+      function add(code, label, sev, detail) { sigs.push({ code: code, label: label, sev: sev, w: FX_W[code], detail: detail }); }
+
+      if (t.status === 'Flagged') add('ghost', 'Possible ghost vendor', 'high', 'The vendor’s Tax Identification Number (TIN) also appears on records for other clients, which is a common sign of a ghost vendor.');
+      var twins = TX.filter(function (x, j) { return j !== i && normV(x.vendor) === normV(t.vendor) && Number(x.amt) === amt && x.date === t.date; });
+      if (twins.length) add('dup', 'Possible duplicate', 'high', 'Another entry has the same vendor, amount and date (' + peso(amt) + ' from ' + t.vendor + ' on ' + t.date + ').');
+      if (amt >= FX_LIMIT * 0.95 && amt < FX_LIMIT) add('under', 'Just under the approval limit', 'high', 'The total sits ' + peso(FX_LIMIT - amt) + ' below ' + peso(FX_LIMIT) + ', the amount that needs a second signature.');
+      if (amt >= FX_LIMIT) add('approval', 'Needs a second signature', 'med', 'Purchases of ' + peso(FX_LIMIT) + ' or more need a second signature. Make sure it is on file.');
+      if (amt >= 10000 && amt % 1000 === 0) add('round', 'Round-number total', 'low', 'The total is exactly ' + peso(amt) + '. Real purchases rarely land on a round figure.');
+      var same = TX.filter(function (x) { return x !== t && Number(x.amt) === amt && normV(x.vendor) !== normV(t.vendor); });
+      if (same.length) add('repeat', 'Same amount, another vendor', 'med', 'The amount ' + peso(amt) + ' also appears on ' + plural(same.length, 'entry', 'entries') + ' from a different vendor.');
+
+      var score = 100;
+      sigs.forEach(function (s) { score -= s.w; });
+      score = Math.max(5, score);
+      if (sigs.some(function (s) { return s.sev === 'high'; })) score = Math.min(score, 65);   /* a serious signal always needs a look */
+      return { t: t, sigs: sigs, score: score, verdict: fxVerdict(score) };
+    });
+  }
+
+  function fxRecommend(x) {
+    if (!x.sigs.length) return '';
+    var has = function (c) { return x.sigs.some(function (s) { return s.code === c; }); };
+    if (has('ghost')) return 'Send your CPA the supplier’s official receipt showing its BIR-registered TIN. If you don’t recognise this vendor, tell your CPA right away.';
+    if (has('dup')) return 'Check whether you paid this twice. If you did, ask the supplier for a refund or a credit note and tell your CPA.';
+    if (has('under')) return 'If this purchase was part of a larger order, let your CPA know so the right approval is on file.';
+    if (has('approval')) return 'Upload the signed approval together with the supplier’s official receipt.';
+    if (has('repeat')) return 'Check that each of these is a separate purchase, and keep the receipts for all of them.';
+    return 'Keep the official receipt. Your CPA will take a quick look at the next review.';
+  }
+
+  function fxMeter(score) {
+    return '<div class="fx-score"><div class="fx-score-top">' + score + '%<small>' + FX_LABEL[fxVerdict(score)] + '</small></div>' +
+      '<div class="fx-meter" role="img" aria-label="Authenticity ' + score + ' percent"><i class="' + fxTone(score) + '" style="width:' + score + '%"></i></div></div>';
+  }
+
+  function fxRowHTML(x) {
+    var t = x.t;
+    var chips = x.sigs.length
+      ? x.sigs.slice(0, 2).map(function (s) { return '<span class="sig sev-' + s.sev + '">' + esc(s.label) + '</span>'; }).join('') +
+        (x.sigs.length > 2 ? '<span class="sig">+' + (x.sigs.length - 2) + '</span>' : '')
+      : '<span class="fx-clear">Nothing unusual</span>';
+    return '<tr class="filterable" data-fxv="' + (x.verdict === 'clear' ? 'clear' : 'flagged') + '">' +
+      '<td><div class="vendor-name">' + esc(t.vendor) + '</div><div class="vendor-category">' + esc(t.date) + (t.note ? ' · ' + esc(t.note) : '') + '</div></td>' +
+      '<td class="amount">' + peso(t.amt) + '</td>' +
+      '<td><div class="fx-sigs">' + chips + '</div></td>' +
+      '<td>' + fxMeter(x.score) + '</td></tr>';
+  }
+
+  function fxCardHTML(x) {
+    var t = x.t, tone = fxTone(x.score);
+    return '<article class="card flag-card fx-card ' + tone + '">' +
+      '<div class="flag-top"><div><h3>' + esc(t.vendor) + '</h3><span class="muted small">' + esc(t.note || 'Receipt') + '</span></div>' +
+      '<span class="badge ' + (x.verdict === 'review' ? 'pending' : 'flagged') + '">' + FX_LABEL[x.verdict] + '</span></div>' +
+      '<div class="flag-meta"><div>Amount<b>' + peso(t.amt) + '</b></div><div>Invoice date<b>' + esc(t.date) + '</b></div><div>Authenticity<b>' + x.score + '%</b></div></div>' +
+      '<p class="fx-lead">We compared this document with the rest of your records. ' + plural(x.sigs.length, 'thing', 'things') + ' stood out:</p>' +
+      '<ul class="fx-reasons">' + x.sigs.map(function (s) { return '<li><b>' + esc(s.label) + '</b> — ' + esc(s.detail) + '</li>'; }).join('') + '</ul>' +
+      '<div class="fx-next"><strong>What to do next</strong><span>' + esc(fxRecommend(x)) + '</span></div>' +
+      '<div class="btn-row"><button type="button" class="btn inline sm" data-fx-ask="' + esc(t.id) + '"><svg class="ico"><use href="#i-message"/></svg>Message my CPA</button>' +
+      '<button type="button" class="btn inline sm ghost" data-go="upload"><svg class="ico"><use href="#i-upload"/></svg>Upload supporting document</button></div></article>';
+  }
+
+  function fxAmountList(docs) {
+    var pick = function (c) { return docs.filter(function (x) { return x.sigs.some(function (s) { return s.code === c; }); }); };
+    var under = pick('under'), round = pick('round'), repeat = pick('repeat'), dup = pick('dup');
+    var okI = '<svg class="ico"><use href="#i-check"/></svg>', badI = '<svg class="ico"><use href="#i-alert"/></svg>';
+    var items = [
+      { ok: !dup.length, t: 'Possible duplicates', d: dup.length ? plural(dup.length, 'entry matches', 'entries match') + ' another one on vendor, amount and date.' : 'No two entries share the same vendor, amount and date.' },
+      { ok: !under.length, t: 'Under the approval limit', d: under.length ? under.map(function (x) { return peso(x.t.amt) + ' (' + x.t.vendor + ')'; }).join(', ') + ' sit within 5% of ' + peso(FX_LIMIT) + '.' : 'Nothing sits just under the ' + peso(FX_LIMIT) + ' approval limit.' },
+      { ok: !round.length, t: 'Round-number totals', d: round.length ? plural(round.length, 'total ends', 'totals end') + ' in 000: ' + round.map(function (x) { return peso(x.t.amt); }).join(', ') + '.' : 'No total is a round figure.' },
+      { ok: !repeat.length, t: 'Repeated amounts', d: repeat.length ? plural(repeat.length, 'amount appears', 'amounts appear') + ' under more than one vendor.' : 'No amount repeats under a different vendor.' }
+    ];
+    return items.map(function (it) {
+      return '<li class="' + (it.ok ? 'ok' : 'bad') + '">' + (it.ok ? okI : badI) + '<div><strong>' + esc(it.t) + '</strong><span>' + esc(it.d) + '</span></div></li>';
+    }).join('');
+  }
+
+  /* statements: the user's own scans plus the sample */
+  function stmtRecords() {
+    var mine = store.get('dcm_statements', []);
+    if (!Array.isArray(mine)) mine = [];
+    var own = mine.map(function (r) {
+      var f = (r.reasons || []).map(function (c) { return { label: c.label, detail: c.detail, sev: c.sev, variance: c.variance }; });
+      var score = 100;
+      f.forEach(function (c) { score -= c.sev === 'high' ? 30 : 12; });
+      return { id: r.id, sample: false, name: r.name || 'Scanned statement', date: r.date || '', total: r.total || 0, when: r.when || '', findings: f, score: Math.max(5, score) };
+    });
+    return own.concat(SAMPLE_STMT);
+  }
+  function stmtRecommend(findings) {
+    var out = [];
+    function add(s) { if (out.indexOf(s) < 0) out.push(s); }
+    findings.forEach(function (f) {
+      var l = f.label.toLowerCase();
+      if (/balance|reconcile/.test(l)) add('Compare each total with your ledger and send your CPA a corrected statement.');
+      else if (/spike/.test(l)) add('Gather the BIR-registered receipts for the unusual expenses and send them to your CPA.');
+      else if (/cash|revenue/.test(l)) add('Send your CPA the list of unpaid invoices so they can match revenue to cash received.');
+      else if (/date/.test(l)) add('Check the statement date and upload a clear copy.');
+      else if (/not read/.test(l)) add('Retake the photo so every figure is inside the frame.');
+      else add('Send your CPA the ledger behind these figures so they can confirm each entry.');
+    });
+    return out.slice(0, 2).join(' ');
+  }
+  function stmtCardHTML(r) {
+    var bad = r.findings.length > 0, verdict = fxVerdict(r.score), tone = fxTone(r.score);
+    var sub = (r.date ? fmtISO(r.date) : 'Date not read') + (r.total ? ' · ' + peso(r.total) : '');
+    var lead = bad
+      ? 'We read the totals, dates and figures on this statement and checked them against each other. ' + plural(r.findings.length, 'anomaly', 'anomalies') + ' came back.'
+      : 'We read the totals, dates and figures on this statement and checked them against each other. Nothing conflicts.';
+    return '<article class="card flag-card fx-card ' + (bad ? tone : 'low') + '">' +
+      '<div class="flag-top"><div><h3>' + esc(r.name) + (r.sample ? ' <span class="tag-scan">Sample</span>' : '') + '</h3><span class="muted small">' + esc(sub) + '</span></div>' +
+      '<span class="badge ' + (!bad ? 'verified' : verdict === 'review' ? 'pending' : 'flagged') + '">' + (bad ? FX_LABEL[verdict] : 'Clear') + '</span></div>' +
+      '<div class="fx-scoreRow">' + fxMeter(r.score) + '</div>' +
+      '<p class="fx-lead">' + esc(lead) + '</p>' +
+      (bad ? '<ul class="fx-reasons">' + r.findings.map(function (f) {
+        return '<li><b>' + esc(f.label) + '</b>' + (f.variance ? ' <span class="sig sev-' + (f.sev === 'high' ? 'high' : 'med') + '">' + f.variance + '% variance</span>' : '') + ' — ' + esc(f.detail) + '</li>';
+      }).join('') + '</ul>' +
+        '<div class="fx-next"><strong>What to do next</strong><span>' + esc(stmtRecommend(r.findings)) + '</span></div>' : '') +
+      '<div class="btn-row">' +
+      (bad ? '<button type="button" class="btn inline sm" data-fx-askst="' + esc(r.id) + '"><svg class="ico"><use href="#i-message"/></svg>Message my CPA</button>' : '') +
+      (r.sample ? '' : '<button type="button" class="btn inline sm ghost" data-stdel="' + esc(r.id) + '"><svg class="ico"><use href="#i-x"/></svg>Remove</button>') +
+      '</div></article>';
+  }
+
+  function setFxTab(stmts) {
+    $('#fxTabDocs').setAttribute('aria-selected', stmts ? 'false' : 'true');
+    $('#fxTabStmts').setAttribute('aria-selected', stmts ? 'true' : 'false');
+    $('#fxPanelDocs').hidden = !!stmts;
+    $('#fxPanelStmts').hidden = !stmts;
+  }
+
+  function renderFraud() {
+    var docs = fxDocs();
+    var flagged = docs.filter(function (x) { return x.verdict !== 'clear'; });
+    var stmts = stmtRecords();
+    var stmtBad = stmts.filter(function (r) { return r.findings.length > 0; });
+
+    $('#fxStatDocs').textContent = docs.length;
+    $('#fxStatDocFlag').textContent = flagged.length;
+    $('#fxStatStmts').textContent = stmts.length;
+    $('#fxStatStmtFlag').textContent = stmtBad.length;
+    [['#fxTabDocsN', flagged.length], ['#fxTabStmtsN', stmtBad.length]].forEach(function (p) {
+      var el = $(p[0]); el.textContent = p[1]; el.hidden = p[1] === 0;
+    });
+    var nav = $('#navFx'), total = flagged.length + stmtBad.length;
+    nav.textContent = total; nav.hidden = total === 0;
+
+    var f = $('#fxFilter').value;
+    var list = docs.slice().sort(function (a, b) { return a.score - b.score; }).filter(function (x) {
+      return f === 'all' || (f === 'flagged' ? x.verdict !== 'clear' : x.verdict === 'clear');
+    });
+    $('#fxRows').innerHTML = list.map(fxRowHTML).join('');
+
+    $('#fxFoundHead').hidden = flagged.length === 0;
+    $('#fxFound').innerHTML = flagged.length
+      ? flagged.sort(function (a, b) { return a.score - b.score; }).map(fxCardHTML).join('')
+      : '<section class="card"><div class="empty">All clear. None of your documents look suspicious.</div></section>';
+    $('#fxAmounts').innerHTML = fxAmountList(docs);
+
+    $('#fxStmts').innerHTML = stmts.map(stmtCardHTML).join('');
+    applyFilter();
   }
 
   /* ---------- Messages ---------- */
@@ -1346,11 +1603,14 @@
       }
     });
   }
+  $('#fxFilter').addEventListener('change', renderFraud);
+  $('#fxTabDocs').addEventListener('click', function () { setFxTab(false); });
+  $('#fxTabStmts').addEventListener('click', function () { setFxTab(true); });
   searchInput.addEventListener('input', applyFilter);
   catFilter.addEventListener('change', applyFilter);
 
   /* ---------- Router ---------- */
-  var TITLES = { dashboard: 'Dashboard', upload: 'Upload Documents', spending: 'Spending Tracker', flagged: 'Flagged Transactions', reports: 'Financial Reports', messages: 'Messages', settings: 'Settings' };
+  var TITLES = { dashboard: 'Dashboard', upload: 'Upload Documents', spending: 'Spending Tracker', flagged: 'Flagged Transactions', fraud: 'Fraud & Anomalies', reports: 'Financial Reports', messages: 'Messages', settings: 'Settings' };
   var app = $('#app');
   var current = null;
 
@@ -1377,6 +1637,31 @@
   document.addEventListener('click', function (e) {
     var t;
     if ((t = e.target.closest('[data-go]'))) { go(t.dataset.go); return; }
+    if (e.target.closest('[data-fx-scan]')) { setTab(true); setScanKind('statement'); go('spending'); return; }
+    if ((t = e.target.closest('[data-fx-ask]'))) {
+      var ft = TX.filter(function (x) { return String(x.id) === t.dataset.fxAsk; })[0];
+      if (!ft) return;
+      go('messages');
+      $('#chatInput').value = 'Hi, I\'d like to follow up on the document check for ' + ft.vendor + ' (' + peso(ft.amt) + ', ' + ft.date + '). ';
+      $('#chatInput').focus();
+      return;
+    }
+    if ((t = e.target.closest('[data-fx-askst]'))) {
+      var fs = stmtRecords().filter(function (x) { return String(x.id) === t.dataset.fxAskst; })[0];
+      if (!fs) return;
+      go('messages');
+      $('#chatInput').value = 'Hi, I\'d like to follow up on the anomalies found in my ' + fs.name + '. ';
+      $('#chatInput').focus();
+      return;
+    }
+    if ((t = e.target.closest('[data-stdel]'))) {
+      if (!confirm('Remove this statement check from your register?')) return;
+      var keep = store.get('dcm_statements', []).filter(function (x) { return String(x.id) !== t.dataset.stdel; });
+      store.set('dcm_statements', keep);
+      renderStatementRegister(); renderFraud();
+      toast('Statement removed.');
+      return;
+    }
     if (e.target.closest('[data-scan-again]')) {
       $('#ocrResult').hidden = true;
       openScanner();
